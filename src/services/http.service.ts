@@ -18,6 +18,7 @@ export class HttpService {
   }
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    console.log(config.headers);
     return this.fetchingService
       .get<IResponse<T>>(this.getFullApiUrl(url), config)
       .then((result) => {
@@ -69,7 +70,7 @@ export class HttpService {
       });
   }
 
-  private getFullApiUrl(url: string): string {
+  public getFullApiUrl(url: string): string {
     return `${this.baseUrl}/${url}`;
   }
 }

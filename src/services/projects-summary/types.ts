@@ -86,3 +86,9 @@ export type ITFinResponse = {
   Count: number;
   daysInPeriod: string[];
 };
+
+export type GetProjectsSummaryResponseQuery = {
+  page: number;
+  "filter[from]": string;
+  "filter[to]": string;
+};

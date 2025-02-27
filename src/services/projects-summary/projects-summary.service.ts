@@ -1,7 +1,7 @@
 import { HttpFactoryService } from "../http-factory.service";
 import { IHttpConfig } from "../types";
 import type { HttpService } from "../http.service";
-import { ITFinResponse } from "./types";
+import { ITFinResponse, GetProjectsSummaryResponseQuery } from "./types";
 
 class ProjectsSummaryService {
   constructor(private readonly httpService: HttpService) {
@@ -9,14 +9,18 @@ class ProjectsSummaryService {
   }
 
   public async getProjectsSummaryResponse(
-    q: string,
+    q: GetProjectsSummaryResponseQuery,
     config?: IHttpConfig
   ): Promise<ITFinResponse> {
-    const url = new URL("tracking/projects-summary");
+    const endpoint = "tracking/projects-summary";
 
-    if (Boolean(q)) {
-      url.searchParams.append("q", q!);
-    }
+    const queryString = Object.entries(q)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value.toString())}`)
+      .join("&");
+
+    const url = `${endpoint}?${queryString}`;
+
+    console.log(url.toString());
 
     return this.httpService.get(url.toString(), config);
   }
