@@ -4,12 +4,58 @@ import { projectsSummaryService } from "./services/projects-summary/projects-sum
 import { getJWT } from "./utils/jwt.util";
 import { ITFinResponse } from "./services/projects-summary/types";
 
+const getFirstDayOfMonth = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-01`;
+};
+
+const getLastFriday = (): string => {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day >= 5 ? day - 5 : 7 + day - 5; // Days to subtract to get last Friday
+  now.setDate(now.getDate() - diff);
+  return now.toISOString().split("T")[0]; // Format YYYY-MM-DD
+};
+
+const countWorkingDays = (): { passed: number; total: number } => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  let total = 0;
+  let passed = 0;
+
+  for (let day = 1; day <= 31; day++) {
+    const date = new Date(year, month, day);
+    if (date.getMonth() !== month) break; // Stop when month changes
+
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      // Exclude weekends
+      total++;
+      if (day <= today) passed++;
+    }
+  }
+
+  return { passed, total };
+};
+
 const Popup = () => {
   const [jwt, setJwt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [income, setIncome] = useState<number | null>(null);
-  const [fromDate, setFromDate] = useState<string>("2025-02-17");
-  const [toDate, setToDate] = useState<string>("2025-02-23");
+  const [fromDate, setFromDate] = useState<string>(getFirstDayOfMonth());
+  const [toDate, setToDate] = useState<string>(getLastFriday());
+  const [progress, setProgress] = useState<string | null>(null);
+
+  const { passed, total } = countWorkingDays();
+  const workProgress = `${passed}/${total} (${Math.round(
+    (passed / total) * 100
+  )}%)`;
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -23,55 +69,45 @@ const Popup = () => {
     if (!jwt) return;
 
     setLoading(true);
-    setIncome(null); // Reset income before fetching new data
+    setIncome(null);
+    setProgress("Fetching first page...");
 
     try {
-      // Fetch first page to get total project count
       const firstPageResponse: ITFinResponse =
         await projectsSummaryService.getProjectsSummaryResponse(
           { page: 1, "filter[from]": fromDate, "filter[to]": toDate },
           { headers: { Authorization: jwt } }
         );
 
-      // Extract total count of projects
       const totalProjects = firstPageResponse.Count;
       const totalPages = Math.ceil(totalProjects / 25);
-
-      // If only one page, return the calculated total immediately
       let allProjects = firstPageResponse.Projects;
 
+      setProgress(`Total pages: ${totalPages}. Page 1 fetched.`);
+
       if (totalPages > 1) {
-        // Create an array of promises to fetch all remaining pages
-        const pageRequests = [];
         for (let page = 2; page <= totalPages; page++) {
-          pageRequests.push(
-            projectsSummaryService.getProjectsSummaryResponse(
+          setProgress(`Fetching page ${page}/${totalPages}...`);
+          const response =
+            await projectsSummaryService.getProjectsSummaryResponse(
               { page, "filter[from]": fromDate, "filter[to]": toDate },
               { headers: { Authorization: jwt } }
-            )
-          );
+            );
+          allProjects = [...allProjects, ...response.Projects];
+          setProgress(`Page ${page} fetched (${page}/${totalPages})...`);
         }
-
-        // Fetch all pages concurrently
-        const responses: ITFinResponse[] = await Promise.all(pageRequests);
-
-        // Combine all project data
-        allProjects = [
-          ...allProjects,
-          ...responses.flatMap((res) => res.Projects),
-        ];
       }
 
-      // Calculate total income across all projects
       const totalIncome = allProjects.reduce(
         (sum, project) => sum + project.Income,
         0
       );
-
       setIncome(totalIncome);
+      setProgress(`Completed! Fetched ${totalPages} pages.`);
     } catch (error) {
       console.error("Failed to fetch project income data:", error);
-      setIncome(null); // Indicate failure
+      setIncome(null);
+      setProgress("Error fetching data.");
     } finally {
       setLoading(false);
     }
@@ -113,13 +149,17 @@ const Popup = () => {
         {loading ? "Fetching Data..." : "Get Project Income Data"}
       </button>
 
-      <pre id="incomeDisplay">
+      <pre>{progress}</pre>
+
+      <pre>
         {loading
           ? "Fetching project income..."
           : income !== null
           ? `Total Project Income: $${income.toFixed(2)}`
           : "Project income will appear here..."}
       </pre>
+
+      <pre>Working Days Progress: {workProgress}</pre>
     </div>
   );
 };
