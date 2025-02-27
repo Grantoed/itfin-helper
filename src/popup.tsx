@@ -1,50 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import { projectsSummaryService } from "./services/projects-summary/projects-summary.service";
+import { checkJWT, getJWT } from "./utils/jwt.util";
 
 const Popup = () => {
-  const [count, setCount] = useState(0);
-  const [currentURL, setCurrentURL] = useState<string>();
+  const [jwt, setJwt] = useState<string>();
 
   useEffect(() => {
-    chrome.action.setBadgeText({ text: count.toString() });
-  }, [count]);
-
-  useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      setCurrentURL(tabs[0].url);
-    });
+    checkJWT();
   }, []);
 
-  const changeBackground = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const tab = tabs[0];
-      if (tab.id) {
-        chrome.tabs.sendMessage(
-          tab.id,
-          {
-            color: "#555555",
-          },
-          (msg) => {
-            console.log("result message:", msg);
-          }
-        );
-      }
-    });
+  const handleGetTokenClick = () => {
+    console.log("click");
+    const token = getJWT();
+    console.log(token);
+    if (token) {
+      setJwt(token);
+    }
+  };
+
+  const getProjectIncomeData = async (q: string): Promise<void> => {
+    q = "page=1&filter[from]=2025-02-17&filter[to]=2025-02-23";
+    const projectSummaryResponse =
+      await projectsSummaryService.getProjectsSummaryResponse(q, {
+        headers: {
+          Authorization: jwt,
+        },
+      });
+
+    console.log(projectSummaryResponse);
   };
 
   return (
     <>
-      <ul style={{ minWidth: "700px" }}>
-        <li>Current URL: {currentURL}</li>
-        <li>Current Time: {new Date().toLocaleTimeString()}</li>
-      </ul>
-      <button
-        onClick={() => setCount(count + 1)}
-        style={{ marginRight: "5px" }}
-      >
-        count up
+      <h3>ITFin Helper</h3>
+      <button onClick={handleGetTokenClick} id="getToken">
+        Get
       </button>
-      <button onClick={changeBackground}>change background</button>
+      <pre id="tokenDisplay">{jwt}</pre>
+      <button onClick={() => getProjectIncomeData} id="getProjectIncomeData">
+        Get Project Income Data
+      </button>
+      <pre id="incomeDisplay">Project income will appear here...</pre>
     </>
   );
 };
