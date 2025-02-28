@@ -39,7 +39,7 @@ module.exports = {
             {
                 test: /\.scss$/,
                 exclude: /\.module\.scss$/,
-                use: ["style-loader", "css-loader", "sass-loader", "sass-migrator"],
+                use: ["style-loader", "css-loader", "sass-loader"],
             }
         ],
     },
