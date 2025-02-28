@@ -1,14 +1,11 @@
-import React, { useEffect } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
 import useProjectIncomeData from "../hooks/use-project-income-data.hook";
-import { getJWT } from "../utils/jwt.utils";
+import useJWT from "../hooks/use-jwt.hook";
 import { workProgress } from "../utils/calendar.utils";
 
 const Popup = () => {
   const {
     getProjectIncomeData,
-    jwt,
-    setJwt,
     loading,
     income,
     fromDate,
@@ -18,13 +15,7 @@ const Popup = () => {
     progress,
   } = useProjectIncomeData();
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      const token = await getJWT();
-      setJwt(token?.authToken || null);
-    };
-    fetchToken();
-  }, []);
+  const jwt = useJWT();
 
   return (
     <div style={{ padding: "10px", width: "300px", textAlign: "center" }}>
@@ -77,9 +68,4 @@ const Popup = () => {
   );
 };
 
-const root = createRoot(document.getElementById("root")!);
-root.render(
-  <React.StrictMode>
-    <Popup />
-  </React.StrictMode>
-);
+export default Popup;

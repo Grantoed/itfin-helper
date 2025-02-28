@@ -2,14 +2,16 @@ import { useState } from "react";
 import { getFirstDayOfMonth, getLastFriday } from "../utils/calendar.utils";
 import { projectsSummaryService } from "../services/projects-summary/projects-summary.service";
 import { ITFinResponse } from "../services/projects-summary/types";
+import useJWT from "./use-jwt.hook";
 
 const useProjectIncomeData = () => {
-  const [jwt, setJwt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [income, setIncome] = useState<number | null>(null);
   const [fromDate, setFromDate] = useState<string>(getFirstDayOfMonth());
   const [toDate, setToDate] = useState<string>(getLastFriday());
   const [progress, setProgress] = useState<string | null>(null);
+
+  const jwt = useJWT();
 
   const getProjectIncomeData = async (): Promise<void> => {
     if (!jwt) return;
@@ -61,8 +63,6 @@ const useProjectIncomeData = () => {
 
   return {
     getProjectIncomeData,
-    jwt,
-    setJwt,
     loading,
     income,
     fromDate,
