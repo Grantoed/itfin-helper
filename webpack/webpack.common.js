@@ -32,13 +32,14 @@ module.exports = {
                 use: [
                     "style-loader", 
                     "css-loader?modules", 
-                    "sass-loader"
+                    "sass-loader",
+                    "sass-migrator"
                 ],
             },
             {
                 test: /\.scss$/,
                 exclude: /\.module\.scss$/,
-                use: ["style-loader", "css-loader", "sass-loader"],
+                use: ["style-loader", "css-loader", "sass-loader", "sass-migrator"],
             }
         ],
     },
