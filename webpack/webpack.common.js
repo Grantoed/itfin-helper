@@ -33,7 +33,6 @@ module.exports = {
                     "style-loader", 
                     "css-loader?modules", 
                     "sass-loader",
-                    "sass-migrator"
                 ],
             },
             {
