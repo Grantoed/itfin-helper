@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { getJWT } from "../utils/jwt.utils";
+import { getJWT, checkJWT } from "../utils/jwt.utils";
 
 const useJWT = () => {
   const [jwt, setJwt] = useState<string | null>(null);
 
   useEffect(() => {
+    checkJWT();
+
     const fetchToken = async () => {
       const token = await getJWT();
       setJwt(token?.authToken || null);

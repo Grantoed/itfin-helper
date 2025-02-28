@@ -1,70 +1,55 @@
-# Chrome Extension TypeScript Starter
+# ITFin Helper Chrome Extension
 
-![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
+## Overview
 
-Chrome Extension, TypeScript and Visual Studio Code
+ITFin Helper is a Chrome extension that helps users fetch project income data from ITFin. It provides an easy-to-use popup interface where users can authenticate, select a date range, and retrieve income details.
 
-## Prerequisites
+## Features
 
-* [node + npm](https://nodejs.org/) (Current Version)
+- Authenticate with ITFin
+- Select date range for project income
+- Fetch and display project income data
+- Show working day progress for the current month
 
-## Option
+## Installation
 
-* [Visual Studio Code](https://code.visualstudio.com/)
+Since this extension is not published on the Chrome Web Store, it needs to be installed manually as an unpacked extension.
 
-## Includes the following
+### Steps to Install:
 
-* TypeScript
-* Webpack
-* React
-* Jest
-* Example Code
-    * Chrome Storage
-    * Options Version 2
-    * content script
-    * count up badge number
-    * background
+1. **Build the Extension**
 
-## Project Structure
+   - Run `npm install` to install dependencies.
+   - Run `npm run build` to generate the `dist` folder.
 
-* src/typescript: TypeScript source files
-* src/assets: static files
-* dist: Chrome Extension directory
-* dist/js: Generated JavaScript files
+2. **Load the Extension in Chrome**
+   - Open Google Chrome and navigate to `chrome://extensions/`.
+   - Enable **Developer mode** (toggle in the top right corner).
+   - Click **Load unpacked** and select the `dist` folder.
+   - The extension should now be installed and visible in the extensions bar.
 
-## Setup
+## Development
 
-```
-npm install
-```
+To modify the extension, follow these steps:
 
-## Import as Visual Studio Code project
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/itfin-helper.git
+   cd itfin-helper
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Start development:
+   ```sh
+   npm run start
+   ```
+4. Make changes and rebuild:
+   ```sh
+   npm run build
+   ```
 
-...
+## License
 
-## Build
-
-```
-npm run build
-```
-
-## Build in watch mode
-
-### terminal
-
-```
-npm run watch
-```
-
-### Visual Studio Code
-
-Run watch mode.
-
-type `Ctrl + Shift + B`
-
-## Load extension to chrome
-
-Load `dist` directory
-
-## Test
-`npx jest` or `npm run test`
+MIT License
