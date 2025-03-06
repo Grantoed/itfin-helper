@@ -7,6 +7,7 @@ type Props = {
 };
 
 const Loader: React.FC<Props> = ({ wrapperClass }) => {
+  console.log(styles);
   return (
     <div
       className={classNames(styles.ldsEllipsis, {

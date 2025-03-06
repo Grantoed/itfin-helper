@@ -1,5 +1,6 @@
 import React from "react";
 import useProjectIncomeData from "../../hooks/use-project-income-data.hook";
+import * as styles from "./project-income-data.module.scss";
 
 type Props = {
   jwt: string;
@@ -19,7 +20,7 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 
   return (
     <>
-      <label>From: </label>
+      <label className={styles.test}>From: </label>
       <input
         type="date"
         value={fromDate}

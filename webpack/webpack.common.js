@@ -31,7 +31,16 @@ module.exports = {
                 test: /\.module\.scss$/,
                 use: [
                     "style-loader", 
-                    "css-loader?modules", 
+                    {
+                        loader: "css-loader",
+                        options: {
+                            modules: {
+                                localIdentName: "[name]__[local]__[hash:base64:5]",
+                                namedExport: true,
+                            },
+                            esModule: true,
+                        },
+                    },
                     "sass-loader",
                 ],
             },
@@ -39,11 +48,11 @@ module.exports = {
                 test: /\.scss$/,
                 exclude: /\.module\.scss$/,
                 use: ["style-loader", "css-loader", "sass-loader"],
-            }
+            },
         ],
     },
     resolve: {
-        extensions: [".ts", ".tsx", ".js"],
+        extensions: [".ts", ".tsx", ".js", ".scss"],
     },
     plugins: [
         new CopyPlugin({

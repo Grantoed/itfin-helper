@@ -1,24 +1,14 @@
 .btn {
     cursor: pointer;
-    font-size: 24px;
-    padding: var(--spaces-small) var(--spaces-medium);
-    background: var(--accent-color);
-    border-radius: 10px;
+    font-size: 16px;
+    padding: 6px 12px;
+    background: var(--btn-bg-color);
+    border-radius: 8px;
 
-    &:hover {
-        filter: contrast(120%);
-    }
-
-    &:focus {
-        filter: contrast(120%);
-    }
-
+    &:hover,
+    &:focus,
     &:active {
-        filter: contrast(120%);
+        background: var(--btn-hover-color);
     }
 
-    &:disabled {
-        cursor: default;
-        filter: grayscale(60%);
-    }
 }
