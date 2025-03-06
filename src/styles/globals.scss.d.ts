@@ -14,6 +14,7 @@ export declare const reactDatepickerMonthTextInSelectingRange: string;
 export declare const reactDatepickerQuarterText: string;
 export declare const reactDatepickerQuarterTextInRange: string;
 export declare const reactDatepickerQuarterTextInSelectingRange: string;
+export declare const reactDatepickerWrapper: string;
 export declare const reactDatepickerYearText: string;
 export declare const reactDatepickerYearTextInRange: string;
 export declare const reactDatepickerYearTextInSelectingRange: string;

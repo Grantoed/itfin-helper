@@ -4,6 +4,7 @@ import Container from '../shared/container/container.component';
 import Button from '../shared/button/button.component';
 import Heading from '../shared/heading/heading.component';
 import useWorkLogChecker from '../../hooks/use-work-log-checker.hook';
+import { formatDate } from '../../utils/format-date.util';
 import { formatTime } from '../../utils/format-time.util';
 import { ButtonType } from '../shared/button/button.types';
 import * as styles from './work-log-checker.module.scss';
@@ -45,17 +46,19 @@ const WorkLogChecker = ({ jwt }: Props) => {
 					}}
 				/>
 			</div>
-			{error && <p>{error}</p>}
+
+			{error && <p className={styles.error}>{error}</p>}
+
 			{fetched && !loading && employees.length === 0 && (
-				<p>No data available.</p>
+				<p className={styles.noData}>No data available.</p>
 			)}
-			<div>
+
+			<div className={styles.resultContainer}>
 				{employees
 					.map(employee => {
 						const workDays = employee.Log.Data.filter(
 							day => !day.isWeekend && !day.isHoliday
 						);
-
 						const totalMinutesWorked = workDays.reduce(
 							(sum, day) => sum + day.MinutesInt,
 							0
@@ -70,15 +73,20 @@ const WorkLogChecker = ({ jwt }: Props) => {
 						);
 
 						return (
-							<div key={employee.Id}>
+							<div key={employee.Id} className={styles.employeeCard}>
 								<h3>
 									{employee.FirstName} {employee.LastName}{' '}
 									<span>(Underworked {formatTime(totalDeficit)})</span>
 								</h3>
-								<ul>
+								<ul className={styles.daysList}>
 									{underworkedDays.map(day => (
 										<li key={day.Date}>
-											{day.Date}: {formatTime(day.MinutesInt)}
+											<span className={styles.date}>
+												{formatDate(day.Date)}
+											</span>
+											<span className={styles.time}>
+												{formatTime(day.MinutesInt)}
+											</span>
 										</li>
 									))}
 								</ul>

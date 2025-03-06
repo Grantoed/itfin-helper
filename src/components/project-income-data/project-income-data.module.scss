@@ -5,3 +5,11 @@
 	flex-direction: column;
 	gap: 16px;
 }
+
+.error {
+	color: var(--error-color);
+}
+
+.text {
+	font-size: 14px;
+}

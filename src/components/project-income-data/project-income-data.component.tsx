@@ -21,6 +21,7 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 		toDate,
 		setToDate,
 		progress,
+		error,
 	} = useProjectIncomeData();
 
 	return (
@@ -41,11 +42,14 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 						text: loading ? 'Fetching Data...' : 'Get Data',
 					}}
 				/>
-				<pre>{progress}</pre>
 
-				<pre>
+				{error && <p className={styles.error}>{error}</p>}
+
+				<p className={styles.text}>{progress}</p>
+
+				<p className={styles.text}>
 					{!loading && income && `Total Project Income: $${income.toFixed(2)}`}
-				</pre>
+				</p>
 			</div>
 		</Container>
 	);

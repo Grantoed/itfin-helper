@@ -1,17 +1,18 @@
 .btn {
-  cursor: pointer;
-  padding: 6px 12px;
-  background: var(--btn-bg-color);
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  font-family: inherit;
-  transition: all var(--transition);
-  color: var(--text-color);
+	cursor: pointer;
+	padding: 6px 12px;
+	min-width: 100px;
+	background: var(--btn-bg-color);
+	border-radius: 8px;
+	border: none;
+	font-size: 16px;
+	font-family: inherit;
+	transition: all var(--transition);
+	color: var(--text-color);
 
-  &:hover,
-  &:focus,
-  &:active {
-    background: var(--btn-hover-color);
-  }
+	&:hover,
+	&:focus,
+	&:active {
+		background: var(--btn-hover-color);
+	}
 }

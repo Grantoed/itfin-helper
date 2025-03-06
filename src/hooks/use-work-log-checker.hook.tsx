@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import { trackingService } from '../services/tracking/tracking.service';
 import { EmployeeRecord } from '../services/tracking/types';
 
@@ -16,6 +16,11 @@ const useWorkLogChecker = (jwt: string) => {
 	const [fetched, setFetched] = useState<boolean>(false);
 
 	const fetchWorkLogs = async () => {
+		if (!isBefore(new Date(fromDate), new Date(toDate))) {
+			setError('Start date must be before end date');
+			return;
+		}
+
 		setLoading(true);
 		setError(null);
 		setFetched(true);
