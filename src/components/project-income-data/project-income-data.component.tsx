@@ -47,9 +47,14 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 
 				<p className={styles.text}>{progress}</p>
 
-				<p className={styles.text}>
-					{!loading && income && `Total Project Income: $${income.toFixed(2)}`}
-				</p>
+				{!loading && income && (
+					<p className={styles.text}>
+						Total Project Income:
+						<span className={styles.incomeResult}>
+							{` $${income.toFixed(2)}`}
+						</span>
+					</p>
+				)}
 			</div>
 		</Container>
 	);
