@@ -1,0 +1,18 @@
+.header {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    background-color: var(--alt-bg-color);
+    padding: 16px;
+}
+
+.heading {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.authStatus {
+    font-size: 14px;
+}

@@ -9,7 +9,8 @@
     "clean": "rimraf dist",
     "test": "npx jest --passWithNoTests",
     "style": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "typegen:scss": "npx typed-scss-modules src"
+    "typegen:scss": "typed-scss-modules src",
+    "watch-scss-types": "typed-scss-modules src --watch"
   },
   "author": "",
   "license": "MIT",
@@ -23,6 +24,7 @@
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "react": "^18.2.0",
+    "react-datepicker": "^8.1.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {

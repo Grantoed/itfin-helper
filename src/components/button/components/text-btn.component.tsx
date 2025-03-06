@@ -1,5 +1,4 @@
-import * as React from "react";
-
+import React from "react";
 import Loader from "../../loader/loader.component";
 import type { BtnBase, ButtonType, TextBtnProps } from "../button.types";
 

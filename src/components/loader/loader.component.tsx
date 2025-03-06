@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import styles from "./loader.module.scss";
+import * as styles from "./loader.module.scss";
 
 type Props = {
   wrapperClass?: string;

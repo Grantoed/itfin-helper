@@ -1,5 +1,5 @@
 import React from "react";
-import Popup from "./popup";
+import Popup from "./popup/popup";
 import "../styles/globals.scss";
 import { createRoot } from "react-dom/client";
 

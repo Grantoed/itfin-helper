@@ -1,4 +1,5 @@
 import React from "react";
+import * as styles from "./header.module.scss";
 
 type Props = {
   jwt: string;
@@ -6,10 +7,12 @@ type Props = {
 
 const Header = ({ jwt }: Props) => {
   return (
-    <>
-      <h3>ITFin Helper</h3>
-      <p>{jwt ? "Authenticated" : "Please log in via ITFin first"}</p>
-    </>
+    <header className={styles.header}>
+      <h3 className={styles.heading}>ITFin Helper</h3>
+      <p className={styles.authStatus}>
+        {jwt ? "Authenticated" : "Please log in via ITFin first"}
+      </p>
+    </header>
   );
 };
 
