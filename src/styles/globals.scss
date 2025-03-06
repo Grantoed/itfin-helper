@@ -1,50 +1,49 @@
 @use './theme.module.scss';
 @import 'https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
 @import 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
-@import "react-datepicker/dist/react-datepicker.css";
+@import 'react-datepicker/dist/react-datepicker.css';
 
 body {
-    font-family: var(--main-font);
-    color: var(--text-color);
-    background-color: var(--bg-color);
-    margin: 0;
-    line-height: normal;
-    -webkit-font-smoothing: antialiased;
-    height: 100%;
+  font-family: var(--main-font);
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  margin: 0;
+  line-height: normal;
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
 }
 
 :root {
-    width: 100%;
-    isolation: isolate;
+  width: 100%;
+  isolation: isolate;
 }
 
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 * {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 
-    &:hover,
-    &:focus,
-    &:active {
-        outline: none;
-    }
+  &:hover,
+  &:focus,
+  &:active {
+    outline: none;
+  }
 }
 
 ul {
-    list-style: none;
+  list-style: none;
 }
 
 a {
-
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
+  &:hover,
+  &:focus {
+    text-decoration: none;
+  }
 }
 
 img,
@@ -52,8 +51,8 @@ picture,
 video,
 canvas,
 svg {
-    display: block;
-    max-width: 100%;
+  display: block;
+  max-width: 100%;
 }
 
 p,
@@ -63,22 +62,22 @@ h3,
 h4,
 h5,
 h6 {
-    overflow-wrap: break-word;
-    margin-bottom: 0;
+  overflow-wrap: break-word;
+  margin-bottom: 0;
 }
 
 button {
-    cursor: pointer;
-    font-family: inherit;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    border: 0;
-    padding: 0;
-    clip: rect(0 0 0 0);
-    overflow: hidden;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
 }
