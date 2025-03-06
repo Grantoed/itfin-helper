@@ -1,6 +1,12 @@
 import React from 'react';
+import Calendar from '../calendar/calendar.component';
+import Container from '../shared/container/container.component';
+import Button from '../shared/button/button.component';
+import Heading from '../shared/heading/heading.component';
 import useWorkLogChecker from '../../hooks/use-work-log-checker.hook';
 import { formatTime } from '../../utils/format-time.util';
+import { ButtonType } from '../shared/button/button.types';
+import * as styles from './work-log-checker.module.scss';
 
 type Props = {
 	jwt: string;
@@ -21,22 +27,24 @@ const WorkLogChecker = ({ jwt }: Props) => {
 		setToDate,
 	} = useWorkLogChecker(jwt);
 	return (
-		<div>
-			<h2>Work Log Checker</h2>
-			<div>
-				<input
-					type="date"
-					value={fromDate}
-					onChange={e => setFromDate(e.target.value)}
+		<Container>
+			<Heading>Work Log Checker</Heading>
+			<div className={styles.wrapper}>
+				<Calendar
+					fromDate={fromDate}
+					toDate={toDate}
+					setFromDate={setFromDate}
+					setToDate={setToDate}
 				/>
-				<input
-					type="date"
-					value={toDate}
-					onChange={e => setToDate(e.target.value)}
+				<Button
+					onClick={fetchWorkLogs}
+					disabled={!jwt || loading}
+					additionalProps={{
+						btnType: ButtonType.TEXT,
+						text: loading ? 'Fetching Data...' : 'Check',
+					}}
 				/>
-				<button onClick={fetchWorkLogs}>Check</button>
 			</div>
-			{loading && <p>Loading...</p>}
 			{error && <p>{error}</p>}
 			{fetched && !loading && employees.length === 0 && (
 				<p>No data available.</p>
@@ -79,7 +87,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 					})
 					.filter(Boolean)}
 			</div>
-		</div>
+		</Container>
 	);
 };
 
