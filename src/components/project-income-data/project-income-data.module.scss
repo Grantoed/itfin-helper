@@ -1,31 +1,9 @@
 .container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  padding: 8px 16px;
-}
-
-.datePicker {
-  border: 2px solid var(--input-bg-color);
-  width: 100%;
-  padding: 8px 12px;
-  font-family: var(--alt-font);
-  font-size: 14px;
-  font-weight: 400;
-  border-radius: 10px;
-  color: var(--text-color);
-  background-color: var(--input-bg-color);
-  transition: border-color var(--transition), background-color var(--transition);
-
-  &:focus {
-    outline: none;
-    background-color: rgb(61, 61, 61);
-  }
-
-  &::placeholder {
-    color: #999;
-  }
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: 16px;
+	width: 100%;
+	padding: 8px 16px;
 }
