@@ -1,3 +1,6 @@
+export declare const arrow: string;
+export declare const container: string;
+export declare const controlsContainer: string;
 export declare const date: string;
 export declare const daysList: string;
 export declare const employeeCard: string;
@@ -5,5 +8,7 @@ export declare const error: string;
 export declare const loadingOverlay: string;
 export declare const noData: string;
 export declare const resultContainer: string;
+export declare const select: string;
+export declare const teamSelector: string;
 export declare const time: string;
 export declare const wrapper: string;

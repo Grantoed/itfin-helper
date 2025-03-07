@@ -13,9 +13,9 @@ const Popup = () => {
 	return (
 		<div className={styles.container}>
 			<Header jwt={jwt} />
-			<ProjectIncomeData jwt={jwt} />
-			<WorkLogChecker jwt={jwt} />
-			<VacationsList jwt={jwt} />
+			{jwt && <ProjectIncomeData jwt={jwt} />}
+			{jwt && <WorkLogChecker jwt={jwt} />}
+			{jwt && <VacationsList jwt={jwt} />}
 			<WorkingDaysProgress />
 		</div>
 	);
