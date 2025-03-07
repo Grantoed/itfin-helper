@@ -45,7 +45,7 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 
 				{error && <p className={styles.error}>{error}</p>}
 
-				<p className={styles.text}>{progress}</p>
+				{progress && <p className={styles.text}>{progress}</p>}
 
 				{!loading && income && (
 					<p className={styles.text}>

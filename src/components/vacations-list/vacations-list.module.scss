@@ -1,0 +1,126 @@
+.wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.filterContainer {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+}
+
+.radioLabel {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.radioInput {
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border: 2px solid var(--accent-color);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	position: relative;
+
+	&:checked::before {
+		content: '';
+		width: 8px;
+		height: 8px;
+		background-color: var(--accent-color);
+		border-radius: 50%;
+		position: absolute;
+	}
+
+	&:focus {
+		outline: none;
+		box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+	}
+}
+
+.error {
+	color: var(--error-color);
+	margin-bottom: 16px;
+}
+
+.noData {
+	color: #718096;
+	text-align: center;
+	padding: 24px;
+	background-color: #f7fafc;
+	border-radius: 4px;
+	margin-bottom: 16px;
+}
+
+.resultContainer {
+	margin-top: 2rem;
+}
+
+.employeeCard {
+	background-color: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	padding: 1.5rem;
+	margin-bottom: 1.5rem;
+
+	h3 {
+		margin-top: 0;
+		padding-bottom: 0.75rem;
+		color: var(--bg-color);
+		border-bottom: 1px solid #e0e0e0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+
+		span {
+			font-size: 0.9rem;
+			color: var(--success-color);
+			font-weight: 600;
+			text-align: center;
+			width: 50%;
+		}
+	}
+}
+
+.vacationInfo {
+	display: flex;
+	justify-content: space-between;
+	color: #4a5568;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+.duration {
+	font-weight: 500;
+	color: #2d3748;
+}
+
+.daysList {
+	list-style: none;
+	padding: 0;
+	margin: 8px 0 0;
+}
+
+.daysList li {
+	display: flex;
+	justify-content: space-between;
+	padding: 4px 0;
+	border-bottom: 1px solid #f7fafc;
+}
+
+.date {
+	color: #718096;
+}
+
+.time {
+	font-weight: 500;
+}

@@ -53,3 +53,32 @@ const { passed, total } = countWorkingDays();
 export const workProgress = `${passed}/${total} (${Math.round(
 	(passed / total) * 100
 )}%)`;
+
+export const formatDateRange = (startDate: string, endDate: string): string => {
+	const start = new Date(startDate);
+	const end = new Date(endDate);
+
+	const months = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec',
+	];
+
+	const startMonth = months[start.getMonth()];
+	const startDay = start.getDate();
+
+	const endMonth = months[end.getMonth()];
+	const endDay = end.getDate();
+	const endYear = end.getFullYear();
+
+	return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${endYear}`;
+};

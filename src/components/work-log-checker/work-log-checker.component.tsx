@@ -53,48 +53,50 @@ const WorkLogChecker = ({ jwt }: Props) => {
 				<p className={styles.noData}>No data available.</p>
 			)}
 
-			<div className={styles.resultContainer}>
-				{employees
-					.map(employee => {
-						const workDays = employee.Log.Data.filter(
-							day => !day.isWeekend && !day.isHoliday
-						);
-						const totalMinutesWorked = workDays.reduce(
-							(sum, day) => sum + day.MinutesInt,
-							0
-						);
-						const expectedMinutes = workDays.length * WORKDAY_IN_MINUTES;
-						const totalDeficit = expectedMinutes - totalMinutesWorked;
+			{employees.length > 0 && (
+				<div className={styles.resultContainer}>
+					{employees
+						.map(employee => {
+							const workDays = employee.Log.Data.filter(
+								day => !day.isWeekend && !day.isHoliday
+							);
+							const totalMinutesWorked = workDays.reduce(
+								(sum, day) => sum + day.MinutesInt,
+								0
+							);
+							const expectedMinutes = workDays.length * WORKDAY_IN_MINUTES;
+							const totalDeficit = expectedMinutes - totalMinutesWorked;
 
-						if (totalDeficit <= 0) return null;
+							if (totalDeficit <= 0) return null;
 
-						const underworkedDays = workDays.filter(
-							day => day.MinutesInt < WORKDAY_IN_MINUTES
-						);
+							const underworkedDays = workDays.filter(
+								day => day.MinutesInt < WORKDAY_IN_MINUTES
+							);
 
-						return (
-							<div key={employee.Id} className={styles.employeeCard}>
-								<h3>
-									{employee.FirstName} {employee.LastName}{' '}
-									<span>(Underworked {formatTime(totalDeficit)})</span>
-								</h3>
-								<ul className={styles.daysList}>
-									{underworkedDays.map(day => (
-										<li key={day.Date}>
-											<span className={styles.date}>
-												{formatDate(day.Date)}
-											</span>
-											<span className={styles.time}>
-												{formatTime(day.MinutesInt)}
-											</span>
-										</li>
-									))}
-								</ul>
-							</div>
-						);
-					})
-					.filter(Boolean)}
-			</div>
+							return (
+								<div key={employee.Id} className={styles.employeeCard}>
+									<h3>
+										{employee.FirstName} {employee.LastName}{' '}
+										<span>(Underworked {formatTime(totalDeficit)})</span>
+									</h3>
+									<ul className={styles.daysList}>
+										{underworkedDays.map(day => (
+											<li key={day.Date}>
+												<span className={styles.date}>
+													{formatDate(day.Date)}
+												</span>
+												<span className={styles.time}>
+													{formatTime(day.MinutesInt)}
+												</span>
+											</li>
+										))}
+									</ul>
+								</div>
+							);
+						})
+						.filter(Boolean)}
+				</div>
+			)}
 		</Container>
 	);
 };

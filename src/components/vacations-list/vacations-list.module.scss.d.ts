@@ -1,0 +1,13 @@
+export declare const date: string;
+export declare const daysList: string;
+export declare const duration: string;
+export declare const employeeCard: string;
+export declare const error: string;
+export declare const filterContainer: string;
+export declare const noData: string;
+export declare const radioInput: string;
+export declare const radioLabel: string;
+export declare const resultContainer: string;
+export declare const time: string;
+export declare const vacationInfo: string;
+export declare const wrapper: string;
