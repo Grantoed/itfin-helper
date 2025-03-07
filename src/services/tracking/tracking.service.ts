@@ -21,8 +21,6 @@ class TrackingService {
 
 		const url = `${endpoint}?${queryString}`;
 
-		console.log(url.toString());
-
 		return this.httpService.get(url.toString(), config);
 	}
 }

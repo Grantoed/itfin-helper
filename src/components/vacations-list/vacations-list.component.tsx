@@ -59,7 +59,7 @@ const VacationsList = ({ jwt }: Props) => {
 			{vacations.length > 0 && (
 				<div className={styles.resultContainer}>
 					{vacations.map(event => (
-						<VacationEvent event={event} />
+						<VacationEvent key={event.RefId} event={event} />
 					))}
 				</div>
 			)}

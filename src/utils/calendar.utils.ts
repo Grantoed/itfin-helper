@@ -55,8 +55,22 @@ export const workProgress = `${passed}/${total} (${Math.round(
 )}%)`;
 
 export const formatDateRange = (startDate: string, endDate: string): string => {
+	// Create Date objects from ISO strings
 	const start = new Date(startDate);
 	const end = new Date(endDate);
+
+	// Create local dates by extracting the date parts and creating new dates
+	// This will handle timezone conversions properly
+	const startLocal = new Date(
+		start.getUTCFullYear(),
+		start.getUTCMonth(),
+		start.getUTCDate()
+	);
+	const endLocal = new Date(
+		end.getUTCFullYear(),
+		end.getUTCMonth(),
+		end.getUTCDate()
+	);
 
 	const months = [
 		'Jan',
@@ -73,12 +87,17 @@ export const formatDateRange = (startDate: string, endDate: string): string => {
 		'Dec',
 	];
 
-	const startMonth = months[start.getMonth()];
-	const startDay = start.getDate();
+	// If the dates are the same after adjusting for timezone, show just one date
+	const isSameDay = startLocal.getTime() === endLocal.getTime();
 
-	const endMonth = months[end.getMonth()];
-	const endDay = end.getDate();
-	const endYear = end.getFullYear();
+	if (isSameDay) {
+		return `${
+			months[startLocal.getMonth()]
+		} ${startLocal.getDate()}, ${startLocal.getFullYear()}`;
+	}
 
-	return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${endYear}`;
+	// Otherwise, show the date range
+	return `${months[startLocal.getMonth()]} ${startLocal.getDate()} - ${
+		months[endLocal.getMonth()]
+	} ${endLocal.getDate()}, ${endLocal.getFullYear()}`;
 };
