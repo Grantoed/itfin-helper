@@ -1,3 +1,18 @@
+export const MONTHS = [
+	'Jan',
+	'Feb',
+	'Mar',
+	'Apr',
+	'May',
+	'Jun',
+	'Jul',
+	'Aug',
+	'Sep',
+	'Oct',
+	'Nov',
+	'Dec',
+];
+
 export const getFirstDayOfMonth = (): string => {
 	const now = new Date();
 	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
@@ -28,7 +43,11 @@ export const countWorkingDays = (): { passed: number; total: number } => {
 	const now = new Date();
 	const year = now.getFullYear();
 	const month = now.getMonth();
-	const today = now.getDate();
+
+	const lastFridayString = getLastFriday();
+	const lastFriday = new Date(lastFridayString);
+
+	const targetDate = lastFriday.getDate();
 
 	let total = 0;
 	let passed = 0;
@@ -41,7 +60,7 @@ export const countWorkingDays = (): { passed: number; total: number } => {
 		if (dayOfWeek !== 0 && dayOfWeek !== 6) {
 			// Exclude weekends
 			total++;
-			if (day <= today) passed++;
+			if (day <= targetDate) passed++;
 		}
 	}
 
@@ -72,32 +91,17 @@ export const formatDateRange = (startDate: string, endDate: string): string => {
 		end.getUTCDate()
 	);
 
-	const months = [
-		'Jan',
-		'Feb',
-		'Mar',
-		'Apr',
-		'May',
-		'Jun',
-		'Jul',
-		'Aug',
-		'Sep',
-		'Oct',
-		'Nov',
-		'Dec',
-	];
-
 	// If the dates are the same after adjusting for timezone, show just one date
 	const isSameDay = startLocal.getTime() === endLocal.getTime();
 
 	if (isSameDay) {
 		return `${
-			months[startLocal.getMonth()]
+			MONTHS[startLocal.getMonth()]
 		} ${startLocal.getDate()}, ${startLocal.getFullYear()}`;
 	}
 
 	// Otherwise, show the date range
-	return `${months[startLocal.getMonth()]} ${startLocal.getDate()} - ${
-		months[endLocal.getMonth()]
+	return `${MONTHS[startLocal.getMonth()]} ${startLocal.getDate()} - ${
+		MONTHS[endLocal.getMonth()]
 	} ${endLocal.getDate()}, ${endLocal.getFullYear()}`;
 };

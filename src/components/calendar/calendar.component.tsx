@@ -34,6 +34,7 @@ const Calendar = ({ fromDate, toDate, setFromDate, setToDate }: Props) => {
 			endDate={dates[1]}
 			dateFormat="dd/MM/yyyy"
 			placeholderText="Select Date Range"
+			calendarStartDay={1}
 		/>
 	);
 };

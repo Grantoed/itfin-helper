@@ -1,5 +1,6 @@
 import React from 'react';
 import Calendar from '../calendar/calendar.component';
+import WorkingDaysProgress from '../working-days-progress/working-days-progress.component';
 import Container from '../shared/container/container.component';
 import Heading from '../shared/heading/heading.component';
 import Button from '../shared/button/button.component';
@@ -56,6 +57,7 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 					</p>
 				)}
 			</div>
+			<WorkingDaysProgress />
 		</Container>
 	);
 };
