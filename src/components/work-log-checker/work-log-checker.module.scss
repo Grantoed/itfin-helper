@@ -22,21 +22,7 @@
 	margin-bottom: 1.5rem;
 
 	h3 {
-		margin-top: 0;
-		padding-bottom: 0.75rem;
 		color: var(--bg-color);
-		border-bottom: 1px solid #e0e0e0;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		span {
-			font-size: 0.9rem;
-			color: var(--error-color);
-			font-weight: 600;
-			text-align: center;
-			width: 50%;
-		}
 	}
 }
 
@@ -146,4 +132,62 @@
 		font-size: 14px;
 		font-weight: 500;
 	}
+}
+
+.employeeMetadataWrapper {
+	display: flex;
+	gap: 16px;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.employeeNameRoleWrapper {
+	display: flex;
+	width: 75%;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.checkboxContainer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+
+	input {
+		cursor: pointer;
+	}
+
+	label {
+		font-size: 14px;
+		font-weight: 500;
+		cursor: pointer;
+	}
+}
+
+.employeeBadge,
+.freelancerBadge {
+	width: fit-content;
+	color: var(--white);
+	font-size: 12px;
+	padding: 4.2px 7.8px;
+	border-radius: 12px;
+	font-weight: 700;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.employeeBadge {
+	background-color: #3398db;
+}
+
+.freelancerBadge {
+	background-color: #a463bf;
+}
+
+.deficitTime {
+	color: var(--error-color);
+	font-weight: 600;
+	font-size: 14px;
+	text-align: center;
 }

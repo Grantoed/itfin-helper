@@ -6,7 +6,6 @@ import {
 	FilterType,
 } from '../services/vacations/types';
 
-// Helper to check if an event is a time off event
 const isTimeoffEvent = (event: CalendarEvent): event is TimeoffEvent => {
 	return event.EventType === 'Vacation' || event.EventType === 'Unpaid';
 };
@@ -44,11 +43,9 @@ const useVacationChecker = (jwt: string) => {
 		setFetched(true);
 
 		try {
-			// We need to fetch data for each month in the date range
 			const months = getMonthsInRange(fromDate, toDate);
 			let allEvents: CalendarEvent[] = [];
 
-			// Make requests for each month
 			for (const monthDate of months) {
 				const query = {
 					date: monthDate,
@@ -61,7 +58,6 @@ const useVacationChecker = (jwt: string) => {
 				allEvents = [...allEvents, ...monthEvents];
 			}
 
-			// Filter events to only include those within the date range
 			const filteredEvents = allEvents.filter(event => {
 				if (!isTimeoffEvent(event)) return false;
 
@@ -70,7 +66,6 @@ const useVacationChecker = (jwt: string) => {
 				const rangeStart = new Date(fromDate);
 				const rangeEnd = new Date(toDate);
 
-				// Check if dates overlap
 				return (
 					(eventStartDate <= rangeEnd && eventEndDate >= rangeStart) ||
 					(eventStartDate >= rangeStart && eventStartDate <= rangeEnd) ||
@@ -78,7 +73,6 @@ const useVacationChecker = (jwt: string) => {
 				);
 			});
 
-			// Remove duplicates (events might appear in multiple months)
 			const uniqueEvents = removeDuplicates(filteredEvents);
 			setVacations(uniqueEvents);
 		} catch (err) {
@@ -89,7 +83,6 @@ const useVacationChecker = (jwt: string) => {
 		}
 	};
 
-	// Get first day of each month in the date range
 	const getMonthsInRange = (start: string, end: string): string[] => {
 		const startDate = new Date(start);
 		const endDate = new Date(end);
@@ -112,7 +105,6 @@ const useVacationChecker = (jwt: string) => {
 		return months;
 	};
 
-	// Remove duplicate events by RefId and Date
 	const removeDuplicates = (events: CalendarEvent[]): CalendarEvent[] => {
 		const uniqueMap = new Map();
 

@@ -9,11 +9,9 @@ type Props = {
 
 const VacationEvent = ({ event }: Props) => {
 	const calculateDuration = (startDate: string, endDate: string): number => {
-		// Create Date objects from ISO strings
 		const start = new Date(startDate);
 		const end = new Date(endDate);
 
-		// Create UTC dates by extracting the date parts and creating new dates
 		const startUTC = new Date(
 			Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
 		);
@@ -21,7 +19,6 @@ const VacationEvent = ({ event }: Props) => {
 			Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate())
 		);
 
-		// Calculate the difference in days using UTC timestamps
 		const diffTime = endUTC.getTime() - startUTC.getTime();
 		const diffDays = diffTime / (1000 * 60 * 60 * 24) + 1;
 

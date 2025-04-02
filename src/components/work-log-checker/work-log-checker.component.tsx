@@ -28,6 +28,8 @@ const WorkLogChecker = ({ jwt }: Props) => {
 		loadingTeams,
 		selectedTeam,
 		setSelectedTeam,
+		hideFreelancers,
+		setHideFreelancers,
 	} = useWorkLogChecker(jwt);
 
 	const teamOptions = [
@@ -57,6 +59,15 @@ const WorkLogChecker = ({ jwt }: Props) => {
 							disabled={loadingTeams}
 							placeholder={loadingTeams ? 'Loading teams...' : 'Select a team'}
 						/>
+					</div>
+					<div className={styles.checkboxContainer}>
+						<input
+							type="checkbox"
+							id="hide-freelancers"
+							checked={hideFreelancers}
+							onChange={e => setHideFreelancers(e.target.checked)}
+						/>
+						<label htmlFor="hide-freelancers">Hide Freelancers</label>
 					</div>
 					<Button
 						onClick={fetchWorkLogs}

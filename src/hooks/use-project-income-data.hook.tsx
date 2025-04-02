@@ -29,12 +29,10 @@ const useProjectIncomeData = () => {
 		setIncome(null);
 		setProgress('Fetching initial data...');
 
-		// Create an AbortController for managing request cancellations
 		const controller = new AbortController();
 		const signal = controller.signal;
 
 		try {
-			// Start by fetching the first two pages in parallel
 			const firstPagePromise =
 				projectsSummaryService.getProjectsSummaryResponse(
 					{ page: 1, 'filter[from]': fromDate, 'filter[to]': toDate },
@@ -47,7 +45,6 @@ const useProjectIncomeData = () => {
 					{ headers: { Authorization: jwt }, signal }
 				);
 
-			// Use Promise.race to get whichever response finishes first
 			const firstResponse = await Promise.race([
 				firstPagePromise,
 				secondPagePromise,
@@ -62,25 +59,20 @@ const useProjectIncomeData = () => {
 				`Determined total pages: ${totalPages}. Collecting results...`
 			);
 
-			// Create a map to track which pages we've received
 			const receivedPages = new Map();
 			const allProjects: Project[] = [];
 
-			// If we only need one page, cancel the second request
 			if (totalPages <= 1) {
 				controller.abort();
 
-				// Add the projects from the response we already have
 				if (firstResponse.Projects) {
 					allProjects.push(...firstResponse.Projects);
 				}
 
 				setProgress(`Completed! Fetched 1 page of 1 total.`);
 			} else {
-				// We need multiple pages - create a collection of promises for all pages
 				const pagePromises = [];
 
-				// Keep track of the two promises we already started
 				pagePromises.push(
 					firstPagePromise
 						.then(response => {
@@ -113,7 +105,6 @@ const useProjectIncomeData = () => {
 						})
 				);
 
-				// Start requests for any remaining pages
 				for (let page = 3; page <= totalPages; page++) {
 					pagePromises.push(
 						projectsSummaryService
@@ -137,14 +128,12 @@ const useProjectIncomeData = () => {
 					);
 				}
 
-				// Wait for all requests to complete
 				await Promise.allSettled(pagePromises);
 				setProgress(
 					`Completed! Fetched ${receivedPages.size} pages of ${totalPages} total.`
 				);
 			}
 
-			// Calculate the total income
 			const totalIncome = allProjects.reduce(
 				(sum, project) => sum + project.Income,
 				0
@@ -152,7 +141,6 @@ const useProjectIncomeData = () => {
 
 			setIncome(totalIncome);
 		} catch (error: any) {
-			// Check if this is an abort error (which means we canceled it intentionally)
 			if (error.name !== 'AbortError') {
 				console.error('Failed to fetch project income data:', error);
 				setIncome(null);

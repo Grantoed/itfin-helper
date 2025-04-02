@@ -1,10 +1,16 @@
 export declare const arrow: string;
+export declare const checkboxContainer: string;
 export declare const container: string;
 export declare const controlsContainer: string;
 export declare const date: string;
 export declare const daysList: string;
+export declare const deficitTime: string;
+export declare const employeeBadge: string;
 export declare const employeeCard: string;
+export declare const employeeMetadataWrapper: string;
+export declare const employeeNameRoleWrapper: string;
 export declare const error: string;
+export declare const freelancerBadge: string;
 export declare const loadingOverlay: string;
 export declare const noData: string;
 export declare const resultContainer: string;

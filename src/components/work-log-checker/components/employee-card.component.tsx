@@ -1,11 +1,11 @@
 import React from 'react';
 import { formatDate } from '../../../utils/format-date.util';
 import { formatTime } from '../../../utils/format-time.util';
-import { EmployeeRecord } from '../../../services/tracking/types';
+import { EnhancedEmployeeRecord } from '../../../hooks/use-work-log-checker.hook';
 import * as styles from '../work-log-checker.module.scss';
 
 type Props = {
-	employee: EmployeeRecord;
+	employee: EnhancedEmployeeRecord;
 };
 
 const EmployeeCard = ({ employee }: Props) => {
@@ -29,10 +29,26 @@ const EmployeeCard = ({ employee }: Props) => {
 
 	return (
 		<div key={employee.Id} className={styles.employeeCard}>
-			<h3>
-				{employee.FirstName} {employee.LastName}{' '}
-				<span>(Underworked {formatTime(totalDeficit)})</span>
-			</h3>
+			<div className={styles.employeeMetadataWrapper}>
+				<div className={styles.employeeNameRoleWrapper}>
+					<h3>
+						{employee.FirstName} {employee.LastName}{' '}
+					</h3>
+					<span
+						className={
+							employee.isFreelancer
+								? styles.freelancerBadge
+								: styles.employeeBadge
+						}
+					>
+						{employee.isFreelancer ? 'Freelancer' : 'Employee'}
+					</span>
+				</div>
+				<span className={styles.deficitTime}>
+					Underworked {formatTime(totalDeficit)}
+				</span>
+			</div>
+
 			<ul className={styles.daysList}>
 				{underworkedDays.map(day => (
 					<li key={day.Date}>

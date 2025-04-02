@@ -5,6 +5,10 @@ import { teamsService } from '../services/teams/teams.service';
 import { EmployeeRecord } from '../services/tracking/types';
 import { Team } from '../services/teams/types';
 
+export interface EnhancedEmployeeRecord extends EmployeeRecord {
+	isFreelancer: boolean;
+}
+
 const useWorkLogChecker = (jwt: string) => {
 	const [fromDate, setFromDate] = useState<string>(
 		format(new Date(), 'yyyy-MM-01')
@@ -12,14 +16,18 @@ const useWorkLogChecker = (jwt: string) => {
 	const [toDate, setToDate] = useState<string>(
 		format(new Date(), 'yyyy-MM-dd')
 	);
-	const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
+	const [employees, setEmployees] = useState<EnhancedEmployeeRecord[]>([]);
+	const [allEmployees, setAllEmployees] = useState<EnhancedEmployeeRecord[]>(
+		[]
+	);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [fetched, setFetched] = useState<boolean>(false);
+	const [hideFreelancers, setHideFreelancers] = useState<boolean>(false);
 
 	const [teams, setTeams] = useState<Team[]>([]);
 	const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
-	const [selectedTeam, setSelectedTeam] = useState<string>('28'); // Default to Team Delivery (id: 28)
+	const [selectedTeam, setSelectedTeam] = useState<string>('28');
 
 	useEffect(() => {
 		const fetchTeams = async () => {
@@ -41,6 +49,14 @@ const useWorkLogChecker = (jwt: string) => {
 		fetchTeams();
 	}, [jwt]);
 
+	useEffect(() => {
+		if (hideFreelancers) {
+			setEmployees(allEmployees.filter(employee => !employee.isFreelancer));
+		} else {
+			setEmployees(allEmployees);
+		}
+	}, [hideFreelancers, allEmployees]);
+
 	const fetchWorkLogs = async () => {
 		if (!isBefore(new Date(fromDate), new Date(toDate))) {
 			setError('Start date must be before end date');
@@ -55,23 +71,46 @@ const useWorkLogChecker = (jwt: string) => {
 		setLoading(true);
 		setError(null);
 		setFetched(true);
+
 		try {
 			const query = {
 				'filter[from]': fromDate,
 				'filter[to]': toDate,
 			};
 
-			const data = await trackingService.getTrackingResponse(
-				selectedTeam,
-				query,
-				{
+			const [trackingData, employmentType] = await Promise.all([
+				trackingService.getTrackingResponse(selectedTeam, query, {
 					headers: { Authorization: jwt },
-				}
-			);
+				}),
+				trackingService.getEmploymentType(selectedTeam, query, {
+					headers: { Authorization: jwt },
+				}),
+			]);
 
-			setEmployees(data as EmployeeRecord[]);
+			const employmentTypeMap = new Map();
+
+			employmentType.Data.forEach(employee => {
+				const isFreelancer = employee.UserType === 'freelancer';
+
+				employmentTypeMap.set(employee.Id, isFreelancer);
+			});
+
+			const enhancedEmployees = trackingData.map((employee: EmployeeRecord) => {
+				return {
+					...employee,
+					isFreelancer: employmentTypeMap.get(employee.Id) || false,
+				};
+			});
+
+			setAllEmployees(enhancedEmployees);
+			setEmployees(
+				hideFreelancers
+					? enhancedEmployees.filter(employee => !employee.isFreelancer)
+					: enhancedEmployees
+			);
 		} catch (err) {
 			setError('Failed to fetch work logs');
+			console.error('Error fetching data:', err);
 		} finally {
 			setLoading(false);
 		}
@@ -91,6 +130,8 @@ const useWorkLogChecker = (jwt: string) => {
 		loadingTeams,
 		selectedTeam,
 		setSelectedTeam,
+		hideFreelancers,
+		setHideFreelancers,
 	};
 };
 
