@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getFirstDayOfMonth, getLastFriday } from '../utils/calendar.utils';
-import { projectsSummaryService } from '../services/projects-summary/projects-summary.service';
 import useJWT from './use-jwt.hook';
-import { Project } from '../services/projects-summary/types';
+import { MessageService } from '../utils/message-service.util';
 
 const useProjectIncomeData = () => {
+	const STALE_REQUEST_MS = 5 * 60 * 1000;
 	const [loading, setLoading] = useState(false);
 	const [income, setIncome] = useState<number | null>(null);
 	const [fromDate, setFromDate] = useState<string>(getFirstDayOfMonth());
@@ -12,12 +12,105 @@ const useProjectIncomeData = () => {
 	const [progress, setProgress] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	const MAX_PROJECT_PROJECTS_PER_PAGE = 25;
-
 	const jwt = useJWT();
+
+	// Load cached data on mount and when dates change
+	useEffect(() => {
+		const loadCachedData = async () => {
+			try {
+				const cachedData = await MessageService.getCachedData();
+
+				// Check for in-progress request (and clear stale ones)
+				const state = cachedData.requestState;
+				if (state && state.type === 'PROJECT_INCOME' && state.loading) {
+					const isMissingTimestamp = !state.timestamp;
+					const isStale =
+						state.timestamp && Date.now() - state.timestamp > STALE_REQUEST_MS;
+					if (isStale || isMissingTimestamp) {
+						await MessageService.sendMessage('CLEAR_REQUEST_STATE');
+						setLoading(false);
+						setProgress(null);
+					} else {
+						setLoading(true);
+						if (state.progress) {
+							setProgress(state.progress);
+						}
+					}
+				}
+
+				if (cachedData.projectIncome) {
+					const cached = cachedData.projectIncome;
+					// Only use cached data if dates match
+					if (
+						cached.fromDate === fromDate &&
+						cached.toDate === toDate &&
+						cached.income !== null
+					) {
+						setIncome(cached.income);
+					} else {
+						// Clear income if dates don't match
+						setIncome(null);
+					}
+				}
+			} catch (err) {
+				console.error('Failed to load cached data:', err);
+			}
+		};
+
+		loadCachedData();
+	}, [fromDate, toDate]);
+
+	// Listen for messages from background script
+	useEffect(() => {
+		const unsubscribeProgress = MessageService.onMessage(
+			'PROJECT_INCOME_PROGRESS',
+			response => {
+				if (response.progress) {
+					setProgress(response.progress);
+				}
+			}
+		);
+
+		const unsubscribeSuccess = MessageService.onMessage(
+			'PROJECT_INCOME_SUCCESS',
+			response => {
+				if (response.data) {
+					setIncome(response.data.income);
+					setProgress(null);
+					setLoading(false);
+				}
+			}
+		);
+
+		const unsubscribeError = MessageService.onMessage(
+			'PROJECT_INCOME_ERROR',
+			response => {
+				setError(response.error || 'An error occurred while fetching data.');
+				setProgress(null);
+				setLoading(false);
+			}
+		);
+
+		const unsubscribeCancelled = MessageService.onMessage(
+			'PROJECT_INCOME_CANCELLED',
+			() => {
+				setProgress(null);
+				setLoading(false);
+				setError(null);
+			}
+		);
+
+		return () => {
+			unsubscribeProgress();
+			unsubscribeSuccess();
+			unsubscribeError();
+			unsubscribeCancelled();
+		};
+	}, []);
 
 	const getProjectIncomeData = async (): Promise<void> => {
 		if (!jwt) return;
+		if (loading) return;
 
 		if (new Date(fromDate) > new Date(toDate)) {
 			setError('Error: Start date cannot be later than the end date.');
@@ -29,131 +122,40 @@ const useProjectIncomeData = () => {
 		setIncome(null);
 		setProgress('Fetching initial data...');
 
-		const controller = new AbortController();
-		const signal = controller.signal;
-
 		try {
-			const firstPagePromise =
-				projectsSummaryService.getProjectsSummaryResponse(
-					{ page: 1, 'filter[from]': fromDate, 'filter[to]': toDate },
-					{ headers: { Authorization: jwt }, signal }
-				);
-
-			const secondPagePromise =
-				projectsSummaryService.getProjectsSummaryResponse(
-					{ page: 2, 'filter[from]': fromDate, 'filter[to]': toDate },
-					{ headers: { Authorization: jwt }, signal }
-				);
-
-			const firstResponse = await Promise.race([
-				firstPagePromise,
-				secondPagePromise,
-			]);
-
-			const totalProjects = firstResponse.Count;
-			const totalPages = Math.ceil(
-				totalProjects / MAX_PROJECT_PROJECTS_PER_PAGE
-			);
-
-			setProgress(
-				`Determined total pages: ${totalPages}. Collecting results...`
-			);
-
-			const receivedPages = new Map();
-			const allProjects: Project[] = [];
-
-			if (totalPages <= 1) {
-				controller.abort();
-
-				if (firstResponse.Projects) {
-					allProjects.push(...firstResponse.Projects);
-				}
-
-				setProgress(`Completed! Fetched 1 page of 1 total.`);
-			} else {
-				const pagePromises = [];
-
-				pagePromises.push(
-					firstPagePromise
-						.then(response => {
-							if (!receivedPages.has(1)) {
-								receivedPages.set(1, true);
-								allProjects.push(...response.Projects);
-							}
-							return response;
-						})
-						.catch(err => {
-							if (err.name !== 'AbortError') {
-								throw err;
-							}
-						})
-				);
-
-				pagePromises.push(
-					secondPagePromise
-						.then(response => {
-							if (!receivedPages.has(2)) {
-								receivedPages.set(2, true);
-								allProjects.push(...response.Projects);
-							}
-							return response;
-						})
-						.catch(err => {
-							if (err.name !== 'AbortError') {
-								throw err;
-							}
-						})
-				);
-
-				for (let page = 3; page <= totalPages; page++) {
-					pagePromises.push(
-						projectsSummaryService
-							.getProjectsSummaryResponse(
-								{ page, 'filter[from]': fromDate, 'filter[to]': toDate },
-								{ headers: { Authorization: jwt }, signal }
-							)
-							.then(response => {
-								receivedPages.set(page, true);
-								allProjects.push(...response.Projects);
-								setProgress(
-									`Fetched ${receivedPages.size} of ${totalPages} pages...`
-								);
-								return response;
-							})
-							.catch(err => {
-								if (err.name !== 'AbortError') {
-									throw err;
-								}
-							})
-					);
-				}
-
-				await Promise.allSettled(pagePromises);
-				setProgress(
-					`Completed! Fetched ${receivedPages.size} pages of ${totalPages} total.`
-				);
-			}
-
-			const totalIncome = allProjects.reduce(
-				(sum, project) => sum + project.Income,
-				0
-			);
-
-			setIncome(totalIncome);
+			// ensure any stale request_state is cleared before new request
+			await MessageService.sendMessage('CLEAR_REQUEST_STATE');
+			await MessageService.sendMessage('FETCH_PROJECT_INCOME', {
+				jwt,
+				fromDate,
+				toDate,
+			});
 		} catch (error: any) {
-			if (error.name !== 'AbortError') {
-				console.error('Failed to fetch project income data:', error);
-				setIncome(null);
-				setProgress('Error fetching data.');
-				setError('An error occurred while fetching data.');
-			}
-		} finally {
+			console.error('Failed to send project income request:', error);
+			setError('Failed to initiate request.');
 			setLoading(false);
+			setProgress(null);
+		}
+	};
+
+	const resetProjectIncome = async () => {
+		try {
+			setLoading(false);
+			setProgress(null);
+			setError(null);
+			setIncome(null);
+			await MessageService.sendMessage('CLEAR_ALL_DATA', { scope: 'projectIncome' });
+			// Clear any cached request state locally to re-enable button immediately
+			setProgress(null);
+			setLoading(false);
+		} catch (err) {
+			console.error('Failed to reset project income state:', err);
 		}
 	};
 
 	return {
 		getProjectIncomeData,
+		resetProjectIncome,
 		loading,
 		income,
 		fromDate,

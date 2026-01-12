@@ -15,6 +15,7 @@ type Props = {
 const ProjectIncomeData = ({ jwt }: Props) => {
 	const {
 		getProjectIncomeData,
+		resetProjectIncome,
 		loading,
 		income,
 		fromDate,
@@ -41,6 +42,14 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 					additionalProps={{
 						btnType: ButtonType.TEXT,
 						text: loading ? 'Fetching Data...' : 'Get Data',
+					}}
+				/>
+				<Button
+					onClick={resetProjectIncome}
+					disabled={!jwt ? true : false}
+					additionalProps={{
+						btnType: ButtonType.TEXT,
+						text: 'Reset',
 					}}
 				/>
 

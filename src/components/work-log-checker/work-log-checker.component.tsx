@@ -22,6 +22,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 		error,
 		fetched,
 		fetchWorkLogs,
+		resetWorkLogs,
 		setFromDate,
 		setToDate,
 		teams,
@@ -75,6 +76,14 @@ const WorkLogChecker = ({ jwt }: Props) => {
 						additionalProps={{
 							btnType: ButtonType.TEXT,
 							text: loading ? 'Fetching Data...' : 'Check',
+						}}
+					/>
+					<Button
+						onClick={resetWorkLogs}
+						disabled={!jwt || !selectedTeam ? true : false}
+						additionalProps={{
+							btnType: ButtonType.TEXT,
+							text: 'Reset',
 						}}
 					/>
 				</div>

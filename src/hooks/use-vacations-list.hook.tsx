@@ -1,16 +1,17 @@
-import { useState } from 'react';
-import { vacationService } from '../services/vacations/vacations.service';
+import { useState, useEffect } from 'react';
 import {
 	CalendarEvent,
 	TimeoffEvent,
 	FilterType,
 } from '../services/vacations/types';
+import { MessageService } from '../utils/message-service.util';
 
 const isTimeoffEvent = (event: CalendarEvent): event is TimeoffEvent => {
 	return event.EventType === 'Vacation' || event.EventType === 'Unpaid';
 };
 
 const useVacationChecker = (jwt: string) => {
+	const STALE_REQUEST_MS = 5 * 60 * 1000;
 	const [fromDate, setFromDate] = useState<string>(() => {
 		const today = new Date();
 		const year = today.getFullYear();
@@ -32,7 +33,89 @@ const useVacationChecker = (jwt: string) => {
 	const [fetched, setFetched] = useState<boolean>(false);
 	const [filterType, setFilterType] = useState<FilterType>('company');
 
+	// Load cached data on mount and when params change
+	useEffect(() => {
+		const loadCachedData = async () => {
+			try {
+				const cachedData = await MessageService.getCachedData();
+
+				// Check for in-progress request (and clear stale ones)
+				const state = cachedData.requestState;
+				if (state && state.type === 'VACATIONS' && state.loading) {
+					const isMissingTimestamp = !state.timestamp;
+					const isStale =
+						state.timestamp && Date.now() - state.timestamp > STALE_REQUEST_MS;
+					if (isStale || isMissingTimestamp) {
+						await MessageService.sendMessage('CLEAR_REQUEST_STATE');
+						setLoading(false);
+					} else {
+						setLoading(true);
+					}
+				}
+
+				if (cachedData.vacations) {
+					const cached = cachedData.vacations;
+					// Only use cached data if dates and filterType match
+					if (
+						cached.fromDate === fromDate &&
+						cached.toDate === toDate &&
+						cached.filterType === filterType &&
+						cached.vacations
+					) {
+						setVacations(cached.vacations.filter(isTimeoffEvent));
+						setFetched(true);
+					} else {
+						// Clear data if params don't match
+						setVacations([]);
+						setFetched(false);
+					}
+				}
+			} catch (err) {
+				console.error('Failed to load cached data:', err);
+			}
+		};
+
+		loadCachedData();
+	}, [fromDate, toDate, filterType]);
+
+	// Listen for messages from background script
+	useEffect(() => {
+		const unsubscribeSuccess = MessageService.onMessage(
+			'VACATIONS_SUCCESS',
+			response => {
+				if (response.data) {
+					setVacations(response.data.vacations.filter(isTimeoffEvent));
+					setFetched(true);
+					setLoading(false);
+				}
+			}
+		);
+
+		const unsubscribeError = MessageService.onMessage(
+			'VACATIONS_ERROR',
+			response => {
+				setError(response.error || 'Failed to fetch vacation data');
+				setLoading(false);
+			}
+		);
+
+		const unsubscribeCancelled = MessageService.onMessage(
+			'VACATIONS_CANCELLED',
+			() => {
+				setLoading(false);
+				setError(null);
+			}
+		);
+
+		return () => {
+			unsubscribeSuccess();
+			unsubscribeError();
+			unsubscribeCancelled();
+		};
+	}, []);
+
 	const fetchVacations = async () => {
+		if (loading) return;
 		if (new Date(fromDate) >= new Date(toDate)) {
 			setError('Start date must be before end date');
 			return;
@@ -43,79 +126,30 @@ const useVacationChecker = (jwt: string) => {
 		setFetched(true);
 
 		try {
-			const months = getMonthsInRange(fromDate, toDate);
-			let allEvents: CalendarEvent[] = [];
-
-			for (const monthDate of months) {
-				const query = {
-					date: monthDate,
-					'filter[type]': filterType,
-				};
-
-				const monthEvents = await vacationService.getVacationsResponse(query, {
-					headers: { Authorization: jwt },
-				});
-				allEvents = [...allEvents, ...monthEvents];
-			}
-
-			const filteredEvents = allEvents.filter(event => {
-				if (!isTimeoffEvent(event)) return false;
-
-				const eventStartDate = new Date(event.StartDate);
-				const eventEndDate = new Date(event.EndDate);
-				const rangeStart = new Date(fromDate);
-				const rangeEnd = new Date(toDate);
-
-				return (
-					(eventStartDate <= rangeEnd && eventEndDate >= rangeStart) ||
-					(eventStartDate >= rangeStart && eventStartDate <= rangeEnd) ||
-					(eventEndDate >= rangeStart && eventEndDate <= rangeEnd)
-				);
+			await MessageService.sendMessage('FETCH_VACATIONS', {
+				jwt,
+				fromDate,
+				toDate,
+				filterType,
 			});
-
-			const uniqueEvents = removeDuplicates(filteredEvents);
-			setVacations(uniqueEvents);
 		} catch (err) {
-			setError('Failed to fetch vacation data');
-			console.error(err);
-		} finally {
+			setError('Failed to initiate request');
+			console.error('Error sending request:', err);
 			setLoading(false);
 		}
 	};
 
-	const getMonthsInRange = (start: string, end: string): string[] => {
-		const startDate = new Date(start);
-		const endDate = new Date(end);
-		const months: string[] = [];
-
-		const currentDate = new Date(startDate);
-		currentDate.setDate(1); // Set to first day of the month
-
-		while (currentDate <= endDate) {
-			const year = currentDate.getFullYear();
-			const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-			const day = '01';
-
-			months.push(`${year}-${month}-${day}`);
-
-			// Move to next month
-			currentDate.setMonth(currentDate.getMonth() + 1);
+	const resetVacations = async () => {
+		try {
+			setLoading(false);
+			setError(null);
+			setFetched(false);
+			setVacations([]);
+			await MessageService.sendMessage('CLEAR_ALL_DATA', { scope: 'vacations' });
+			setLoading(false);
+		} catch (err) {
+			console.error('Failed to reset vacations state:', err);
 		}
-
-		return months;
-	};
-
-	const removeDuplicates = (events: CalendarEvent[]): CalendarEvent[] => {
-		const uniqueMap = new Map();
-
-		events.forEach(event => {
-			if (isTimeoffEvent(event)) {
-				const key = `${event.RefId}-${event.StartDate}-${event.EndDate}`;
-				uniqueMap.set(key, event);
-			}
-		});
-
-		return Array.from(uniqueMap.values());
 	};
 
 	return {
@@ -127,6 +161,7 @@ const useVacationChecker = (jwt: string) => {
 		fetched,
 		filterType,
 		fetchVacations,
+		resetVacations,
 		setFromDate,
 		setToDate,
 		setFilterType,

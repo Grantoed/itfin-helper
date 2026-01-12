@@ -23,6 +23,7 @@ const VacationsList = ({ jwt }: Props) => {
 		fetched,
 		filterType,
 		fetchVacations,
+		resetVacations,
 		setFromDate,
 		setToDate,
 		setFilterType,
@@ -46,6 +47,14 @@ const VacationsList = ({ jwt }: Props) => {
 					additionalProps={{
 						btnType: ButtonType.TEXT,
 						text: loading ? 'Fetching Data...' : 'Check',
+					}}
+				/>
+				<Button
+					onClick={resetVacations}
+					disabled={false}
+					additionalProps={{
+						btnType: ButtonType.TEXT,
+						text: 'Reset',
 					}}
 				/>
 			</div>
