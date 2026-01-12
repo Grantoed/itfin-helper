@@ -13,6 +13,31 @@
 	align-items: center;
 }
 
+.filterRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.toggleContainer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+
+	input {
+		cursor: pointer;
+	}
+
+	label {
+		cursor: pointer;
+		font-weight: 500;
+		color: var(--text-color);
+	}
+}
+
 .radioLabel {
 	display: flex;
 	align-items: center;
@@ -64,6 +89,66 @@
 
 .resultContainer {
 	margin-top: 2rem;
+}
+
+.markdownContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 12px;
+	padding: 18px;
+	background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+	border: 1px solid #d5deea;
+	border-radius: 8px;
+	box-shadow: 0 8px 30px rgba(17, 24, 39, 0.06);
+}
+
+.markdownActions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.markdownHint {
+	color: #4a5568;
+	font-size: 14px;
+}
+
+.markdownTextarea {
+	width: 100%;
+	min-height: 160px;
+	padding: 12px 14px;
+	border-radius: 10px;
+	border: 1px solid #cbd5e0;
+	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+	background: #f1f5f9;
+	color: #1a202c;
+	resize: vertical;
+	line-height: 1.4;
+}
+
+.copyButton {
+	border: 1px solid #c3d0e6;
+	background: #e5ecf6;
+	color: #1a365d;
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s ease;
+
+	&:hover:not(:disabled) {
+		background: #d5e2f4;
+		border-color: #a7b9dc;
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
 }
 
 .employeeCard {
