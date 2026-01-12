@@ -5,6 +5,8 @@ import { EmployeeRecord } from '../services/tracking/types';
 import { Team } from '../services/teams/types';
 import { MessageService } from '../utils/message-service.util';
 
+const LAST_SELECTED_TEAM_KEY = 'workLogLastSelectedTeamId';
+
 export interface EnhancedEmployeeRecord extends EmployeeRecord {
 	isFreelancer: boolean;
 }
@@ -29,6 +31,34 @@ const useWorkLogChecker = (jwt: string) => {
 	const [teams, setTeams] = useState<Team[]>([]);
 	const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
 	const [selectedTeam, setSelectedTeam] = useState<string>('28');
+
+	// Restore last selected team on mount (persisted across popup reopen)
+	useEffect(() => {
+		const restoreLastSelectedTeam = async () => {
+			try {
+				if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+					const stored = await chrome.storage.local.get([
+						LAST_SELECTED_TEAM_KEY,
+					]);
+					const savedTeamId = stored?.[LAST_SELECTED_TEAM_KEY];
+					if (savedTeamId) {
+						setSelectedTeam(savedTeamId);
+						return;
+					}
+				}
+
+				const cachedData = await MessageService.getCachedData();
+				const cachedTeamId = cachedData?.workLogs?.teamId;
+				if (cachedTeamId) {
+					setSelectedTeam(cachedTeamId);
+				}
+			} catch (err) {
+				console.error('Failed to restore last selected team:', err);
+			}
+		};
+
+		restoreLastSelectedTeam();
+	}, []);
 
 	// Load cached data on mount and when params change
 	useEffect(() => {
@@ -66,6 +96,10 @@ const useWorkLogChecker = (jwt: string) => {
 						setAllEmployees([]);
 						setEmployees([]);
 						setFetched(false);
+					}
+
+					if (cached.teamId && cached.teamId !== selectedTeam) {
+						setSelectedTeam(cached.teamId);
 					}
 				}
 			} catch (err) {
@@ -167,6 +201,12 @@ const useWorkLogChecker = (jwt: string) => {
 				toDate,
 				hideFreelancers,
 			});
+
+			if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+				await chrome.storage.local.set({
+					[LAST_SELECTED_TEAM_KEY]: selectedTeam,
+				});
+			}
 		} catch (err) {
 			setError('Failed to initiate request');
 			console.error('Error sending request:', err);
