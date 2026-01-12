@@ -12,6 +12,7 @@ const useProjectIncomeData = () => {
 	const [progress, setProgress] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [fetchedAt, setFetchedAt] = useState<number | null>(null);
+	const [hydratedFromCache, setHydratedFromCache] = useState(false);
 
 	const jwt = useJWT();
 
@@ -39,31 +40,39 @@ const useProjectIncomeData = () => {
 					}
 				}
 
-				if (cachedData.projectIncome) {
-					const cached = cachedData.projectIncome;
-					// Only use cached data if dates match
-					if (
-						cached.fromDate === fromDate &&
-						cached.toDate === toDate &&
-						cached.income !== null
-					) {
+				const cached = cachedData.projectIncome;
+				const hasCachedIncome = cached && cached.income !== null;
+				const datesMatch =
+					cached?.fromDate === fromDate && cached?.toDate === toDate;
+
+				if (hasCachedIncome) {
+					// If we're loading from cache for the first time and the dates were reset
+					// (e.g. popup was closed and reopened), realign the inputs to the cached range
+					// so the user still sees the completed result.
+					if (!hydratedFromCache && !datesMatch) {
+						setFromDate(cached.fromDate);
+						setToDate(cached.toDate);
+					}
+
+					if (datesMatch || !hydratedFromCache) {
 						setIncome(cached.income);
 						setFetchedAt(cached.timestamp ?? null);
 					} else {
-						// Clear income if dates don't match
 						setIncome(null);
 						setFetchedAt(null);
 					}
 				} else {
+					setIncome(null);
 					setFetchedAt(null);
 				}
+				setHydratedFromCache(true);
 			} catch (err) {
 				console.error('Failed to load cached data:', err);
 			}
 		};
 
 		loadCachedData();
-	}, [fromDate, toDate]);
+	}, [fromDate, toDate, hydratedFromCache]);
 
 	// Listen for messages from background script
 	useEffect(() => {
