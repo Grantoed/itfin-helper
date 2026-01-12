@@ -54,7 +54,9 @@ const WorkLogChecker = ({ jwt }: Props) => {
 	const markdownText = useMemo(() => {
 		if (!employees.length) return '';
 
-		return employees
+		const WORKDAY_IN_MINUTES = 480;
+
+		const underworkedEmployees = employees
 			.map(employee => {
 				const workDays = employee.Log.Data.filter(
 					day => !day.isWeekend && !day.isHoliday
@@ -63,12 +65,20 @@ const WorkLogChecker = ({ jwt }: Props) => {
 					(sum, day) => sum + day.MinutesInt,
 					0
 				);
+				const expectedMinutes = workDays.length * WORKDAY_IN_MINUTES;
+				const totalDeficit = expectedMinutes - totalMinutesWorked;
 
-				return `- ${employee.FirstName} ${employee.LastName} — ${formatTime(
-					totalMinutesWorked
+				if (totalDeficit <= 0) {
+					return null;
+				}
+
+				return `- ${employee.FirstName} ${employee.LastName} — Underworked ${formatTime(
+					totalDeficit
 				)}`;
 			})
-			.join('\n');
+			.filter((entry): entry is string => Boolean(entry));
+
+		return underworkedEmployees.join('\n');
 	}, [employees]);
 
 	const handleCopyMarkdown = async () => {
