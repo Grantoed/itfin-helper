@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Calendar from '../calendar/calendar.component';
 import Container from '../shared/container/container.component';
 import Button from '../shared/button/button.component';
@@ -8,12 +8,23 @@ import useWorkLogChecker from '../../hooks/use-work-log-checker.hook';
 import { ButtonType } from '../shared/button/button.types';
 import EmployeeCard from './components/employee-card.component';
 import * as styles from './work-log-checker.module.scss';
+import { formatTime } from '../../utils/format-time.util';
 
 type Props = {
 	jwt: string;
 };
 
+const classNames = styles as typeof styles & {
+	checkboxesRow: string;
+	copyButton: string;
+};
+
 const WorkLogChecker = ({ jwt }: Props) => {
+	const [showMarkdown, setShowMarkdown] = useState(false);
+	const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>(
+		'idle'
+	);
+
 	const {
 		fromDate,
 		toDate,
@@ -39,6 +50,37 @@ const WorkLogChecker = ({ jwt }: Props) => {
 			[]),
 	];
 
+	const markdownText = useMemo(() => {
+		if (!employees.length) return '';
+
+		return employees
+			.map(employee => {
+				const workDays = employee.Log.Data.filter(
+					day => !day.isWeekend && !day.isHoliday
+				);
+				const totalMinutesWorked = workDays.reduce(
+					(sum, day) => sum + day.MinutesInt,
+					0
+				);
+
+				return `- ${employee.FirstName} ${employee.LastName} — ${formatTime(totalMinutesWorked)}`;
+			})
+			.join('\n');
+	}, [employees]);
+
+	const handleCopyMarkdown = async () => {
+		if (!markdownText) return;
+
+		try {
+			await navigator.clipboard.writeText(markdownText);
+			setCopyState('copied');
+			setTimeout(() => setCopyState('idle'), 2000);
+		} catch (err) {
+			console.error('Failed to copy markdown', err);
+			setCopyState('error');
+		}
+	};
+
 	return (
 		<Container>
 			<Heading>Work Log Checker</Heading>
@@ -61,14 +103,26 @@ const WorkLogChecker = ({ jwt }: Props) => {
 							placeholder={loadingTeams ? 'Loading teams...' : 'Select a team'}
 						/>
 					</div>
-					<div className={styles.checkboxContainer}>
-						<input
-							type="checkbox"
-							id="hide-freelancers"
-							checked={hideFreelancers}
-							onChange={e => setHideFreelancers(e.target.checked)}
-						/>
-						<label htmlFor="hide-freelancers">Hide Freelancers</label>
+					<div className={classNames.checkboxesRow}>
+						<div className={styles.checkboxContainer}>
+							<input
+								type="checkbox"
+								id="hide-freelancers"
+								checked={hideFreelancers}
+								onChange={e => setHideFreelancers(e.target.checked)}
+							/>
+							<label htmlFor="hide-freelancers">Hide Freelancers</label>
+						</div>
+						<div className={styles.checkboxContainer}>
+							<input
+								type="checkbox"
+								id="markdown-toggle"
+								checked={showMarkdown}
+								onChange={e => setShowMarkdown(e.target.checked)}
+								disabled={!employees.length}
+							/>
+							<label htmlFor="markdown-toggle">Show markdown view</label>
+						</div>
 					</div>
 					<Button
 						onClick={fetchWorkLogs}
@@ -97,13 +151,42 @@ const WorkLogChecker = ({ jwt }: Props) => {
 			)}
 
 			{employees.length > 0 && (
-				<div className={styles.resultContainer}>
-					{employees
-						.map((employee, index) => {
-							return <EmployeeCard key={index} employee={employee} />;
-						})
-						.filter(Boolean)}
-				</div>
+				<>
+					{showMarkdown ? (
+						<div className={styles.markdownContainer}>
+							<div className={styles.markdownActions}>
+								<span className={styles.markdownHint}>
+									Copy-friendly markdown list
+								</span>
+								<button
+									type="button"
+									className={classNames.copyButton}
+									onClick={handleCopyMarkdown}
+									disabled={!markdownText}
+								>
+									{copyState === 'copied'
+										? 'Copied!'
+										: copyState === 'error'
+											? 'Copy failed'
+											: 'Copy'}
+								</button>
+							</div>
+							<textarea
+								className={styles.markdownTextarea}
+								readOnly
+								value={markdownText}
+							/>
+						</div>
+					) : (
+						<div className={styles.resultContainer}>
+							{employees
+								.map((employee, index) => {
+									return <EmployeeCard key={index} employee={employee} />;
+								})
+								.filter(Boolean)}
+						</div>
+					)}
+				</>
 			)}
 		</Container>
 	);
