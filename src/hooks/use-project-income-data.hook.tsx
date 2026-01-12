@@ -11,6 +11,7 @@ const useProjectIncomeData = () => {
 	const [toDate, setToDate] = useState<string>(getLastFriday());
 	const [progress, setProgress] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [fetchedAt, setFetchedAt] = useState<number | null>(null);
 
 	const jwt = useJWT();
 
@@ -47,10 +48,14 @@ const useProjectIncomeData = () => {
 						cached.income !== null
 					) {
 						setIncome(cached.income);
+						setFetchedAt(cached.timestamp ?? null);
 					} else {
 						// Clear income if dates don't match
 						setIncome(null);
+						setFetchedAt(null);
 					}
+				} else {
+					setFetchedAt(null);
 				}
 			} catch (err) {
 				console.error('Failed to load cached data:', err);
@@ -76,6 +81,7 @@ const useProjectIncomeData = () => {
 			response => {
 				if (response.data) {
 					setIncome(response.data.income);
+					setFetchedAt(response.data.timestamp ?? null);
 					setProgress(null);
 					setLoading(false);
 				}
@@ -120,6 +126,7 @@ const useProjectIncomeData = () => {
 		setError(null);
 		setLoading(true);
 		setIncome(null);
+		setFetchedAt(null);
 		setProgress('Fetching initial data...');
 
 		try {
@@ -144,6 +151,7 @@ const useProjectIncomeData = () => {
 			setProgress(null);
 			setError(null);
 			setIncome(null);
+			setFetchedAt(null);
 			await MessageService.sendMessage('CLEAR_ALL_DATA', { scope: 'projectIncome' });
 			// Clear any cached request state locally to re-enable button immediately
 			setProgress(null);
@@ -164,6 +172,7 @@ const useProjectIncomeData = () => {
 		setToDate,
 		progress,
 		error,
+		fetchedAt,
 	};
 };
 

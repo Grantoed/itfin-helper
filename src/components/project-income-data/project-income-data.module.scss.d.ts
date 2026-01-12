@@ -1,3 +1,9 @@
+export declare const meta: string;
+export declare const metaLabel: string;
+export declare const resultCard: string;
+export declare const resultHeader: string;
+export declare const resultTitle: string;
+export declare const resultValue: string;
 export declare const error: string;
 export declare const incomeResult: string;
 export declare const text: string;

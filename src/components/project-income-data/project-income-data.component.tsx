@@ -6,6 +6,7 @@ import Heading from '../shared/heading/heading.component';
 import Button from '../shared/button/button.component';
 import { ButtonType } from '../shared/button/button.types';
 import useProjectIncomeData from '../../hooks/use-project-income-data.hook';
+import { formatDate } from '../../utils/format-date.util';
 import * as styles from './project-income-data.module.scss';
 
 type Props = {
@@ -24,7 +25,17 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 		setToDate,
 		progress,
 		error,
+		fetchedAt,
 	} = useProjectIncomeData();
+	const showClearButton = loading || income !== null || !!progress;
+	const hasIncome = !loading && income !== null;
+
+	const formatTimestamp = (value: number) => {
+		return new Date(value).toLocaleString(undefined, {
+			dateStyle: 'medium',
+			timeStyle: 'short',
+		});
+	};
 
 	return (
 		<Container>
@@ -44,27 +55,39 @@ const ProjectIncomeData = ({ jwt }: Props) => {
 						text: loading ? 'Fetching data...' : 'Fetch income',
 					}}
 				/>
-				<Button
-					onClick={resetProjectIncome}
-					disabled={!jwt ? true : false}
-					variant="secondary"
-					additionalProps={{
-						btnType: ButtonType.TEXT,
-						text: 'Clear',
-					}}
-				/>
+				{showClearButton && (
+					<Button
+						onClick={resetProjectIncome}
+						disabled={!jwt ? true : false}
+						variant="secondary"
+						additionalProps={{
+							btnType: ButtonType.TEXT,
+							text: 'Clear',
+						}}
+					/>
+				)}
 
 				{error && <p className={styles.error}>{error}</p>}
 
 				{progress && <p className={styles.text}>{progress}</p>}
 
-				{!loading && income && (
-					<p className={styles.text}>
-						Total Project Income:
-						<span className={styles.incomeResult}>
-							{` $${income.toFixed(2)}`}
-						</span>
-					</p>
+				{hasIncome && (
+					<div className={styles.resultCard}>
+						<div className={styles.resultHeader}>
+							<p className={styles.resultTitle}>Income results</p>
+							{fetchedAt && (
+								<p className={styles.meta}>
+									<span className={styles.metaLabel}>Fetched:</span>{' '}
+									{formatTimestamp(fetchedAt)}
+								</p>
+							)}
+						</div>
+						<p className={styles.resultValue}>{`$${income!.toFixed(2)}`}</p>
+						<p className={styles.meta}>
+							<span className={styles.metaLabel}>Period:</span>{' '}
+							{`${formatDate(fromDate)} – ${formatDate(toDate)}`}
+						</p>
+					</div>
 				)}
 			</div>
 			<WorkingDaysProgress />

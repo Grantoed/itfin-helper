@@ -61,6 +61,7 @@ const VacationsList = ({ jwt }: Props) => {
 		setToDate,
 		setFilterType,
 	} = useVacationChecker(jwt);
+	const showClearButton = loading || vacations.length > 0;
 
 	const markdownText = useMemo(() => {
 		if (!vacations.length) return '';
@@ -125,15 +126,17 @@ const VacationsList = ({ jwt }: Props) => {
 						text: loading ? 'Fetching data...' : 'Fetch vacations',
 					}}
 				/>
-				<Button
-					onClick={resetVacations}
-					disabled={false}
-					variant="secondary"
-					additionalProps={{
-						btnType: ButtonType.TEXT,
-						text: 'Clear',
-					}}
-				/>
+				{showClearButton && (
+					<Button
+						onClick={resetVacations}
+						disabled={false}
+						variant="secondary"
+						additionalProps={{
+							btnType: ButtonType.TEXT,
+							text: 'Clear',
+						}}
+					/>
+				)}
 			</div>
 
 			{error && <p className={styles.error}>{error}</p>}
@@ -159,8 +162,8 @@ const VacationsList = ({ jwt }: Props) => {
 									{copyState === 'copied'
 										? 'Copied!'
 										: copyState === 'error'
-											? 'Copy failed'
-											: 'Copy'}
+										? 'Copy failed'
+										: 'Copy'}
 								</button>
 							</div>
 							<textarea

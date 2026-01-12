@@ -43,6 +43,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 		hideFreelancers,
 		setHideFreelancers,
 	} = useWorkLogChecker(jwt);
+	const showClearButton = loading || employees.length > 0;
 
 	const teamOptions = [
 		{ value: '28', label: 'Team Delivery' },
@@ -63,7 +64,9 @@ const WorkLogChecker = ({ jwt }: Props) => {
 					0
 				);
 
-				return `- ${employee.FirstName} ${employee.LastName} — ${formatTime(totalMinutesWorked)}`;
+				return `- ${employee.FirstName} ${employee.LastName} — ${formatTime(
+					totalMinutesWorked
+				)}`;
 			})
 			.join('\n');
 	}, [employees]);
@@ -132,6 +135,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 							text: loading ? 'Fetching data...' : 'Fetch work logs',
 						}}
 					/>
+				{showClearButton && (
 					<Button
 						onClick={resetWorkLogs}
 						disabled={!jwt || !selectedTeam ? true : false}
@@ -141,6 +145,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 							text: 'Clear',
 						}}
 					/>
+				)}
 				</div>
 			</div>
 
@@ -167,8 +172,8 @@ const WorkLogChecker = ({ jwt }: Props) => {
 									{copyState === 'copied'
 										? 'Copied!'
 										: copyState === 'error'
-											? 'Copy failed'
-											: 'Copy'}
+										? 'Copy failed'
+										: 'Copy'}
 								</button>
 							</div>
 							<textarea
