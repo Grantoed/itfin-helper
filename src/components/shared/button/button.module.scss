@@ -1,18 +1,59 @@
 .btn {
 	cursor: pointer;
-	padding: 6px 12px;
-	min-width: 100px;
-	background: var(--btn-bg-color);
-	border-radius: 8px;
-	border: none;
-	font-size: 16px;
+	padding: 10px 14px;
+	min-width: 120px;
+	border-radius: 10px;
+	border: 1px solid transparent;
+	font-size: 15px;
 	font-family: inherit;
 	transition: all var(--transition);
 	color: var(--text-color);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	font-weight: 600;
 
 	&:hover,
 	&:focus,
 	&:active {
-		background: var(--btn-hover-color);
+		transform: translateY(-1px);
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--accent-color);
+		outline-offset: 2px;
+	}
+
+	&:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+		box-shadow: none;
+		transform: none;
+	}
+}
+
+.primary {
+	background: linear-gradient(135deg, var(--accent-color), #ffd633);
+	color: var(--bg-color);
+	border-color: var(--accent-color);
+
+	&:hover,
+	&:focus,
+	&:active {
+		background: linear-gradient(135deg, #ffd633, var(--accent-color));
+	}
+}
+
+.secondary {
+	background: transparent;
+	color: var(--text-color);
+	border-color: var(--btn-hover-color);
+
+	&:hover,
+	&:focus,
+	&:active {
+		background: var(--hover-color);
 	}
 }

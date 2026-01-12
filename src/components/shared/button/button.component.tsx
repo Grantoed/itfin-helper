@@ -15,6 +15,7 @@ type ButtonProps<T extends ButtonType> = React.DetailedHTMLProps<
   HTMLButtonElement
 > & {
   loading?: boolean;
+  variant?: "primary" | "secondary";
   additionalProps: T extends ButtonType.TEXT
     ? TextBtnProps<T>
     : T extends ButtonType.ICON
@@ -25,16 +26,18 @@ type ButtonProps<T extends ButtonType> = React.DetailedHTMLProps<
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps<ButtonType>>(
-  ({ loading, additionalProps, ...buttonAttributes }, ref) => {
+  ({ loading, variant = "primary", additionalProps, ...buttonAttributes }, ref) => {
     const isLoading = Boolean(loading);
     const isDisabled = isLoading || Boolean(buttonAttributes.disabled);
+    const variantClass =
+      variant === "secondary" ? styles.secondary : styles.primary;
 
     const baseProps = {
       isDisabled,
       isLoading,
       ...buttonAttributes,
       ref,
-      className: styles.btn,
+      className: [styles.btn, variantClass].filter(Boolean).join(" "),
     };
 
     switch (additionalProps.btnType) {

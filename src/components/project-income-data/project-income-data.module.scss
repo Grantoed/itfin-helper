@@ -1,9 +1,10 @@
 .wrapper {
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 	justify-content: center;
 	flex-direction: column;
 	gap: 16px;
+	width: 100%;
 }
 
 .error {

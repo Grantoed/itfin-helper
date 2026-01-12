@@ -1,18 +1,56 @@
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
   background-color: var(--alt-bg-color);
   padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .heading {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 
-.authStatus {
+.subheading {
   font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.statusChipSuccess {
+  background: rgba(55, 110, 55, 0.18);
+  color: #7ef7a0;
+  border-color: rgba(55, 110, 55, 0.6);
+}
+
+.statusChipWarning {
+  background: rgba(232, 78, 79, 0.16);
+  color: #ffb0b0;
+  border-color: rgba(232, 78, 79, 0.6);
 }

@@ -75,15 +75,16 @@ const WorkLogChecker = ({ jwt }: Props) => {
 						disabled={!jwt || loading || !selectedTeam}
 						additionalProps={{
 							btnType: ButtonType.TEXT,
-							text: loading ? 'Fetching Data...' : 'Check',
+							text: loading ? 'Fetching data...' : 'Fetch work logs',
 						}}
 					/>
 					<Button
 						onClick={resetWorkLogs}
 						disabled={!jwt || !selectedTeam ? true : false}
+						variant="secondary"
 						additionalProps={{
 							btnType: ButtonType.TEXT,
-							text: 'Reset',
+							text: 'Clear',
 						}}
 					/>
 				</div>

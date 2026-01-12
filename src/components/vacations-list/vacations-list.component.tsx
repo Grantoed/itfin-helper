@@ -46,15 +46,16 @@ const VacationsList = ({ jwt }: Props) => {
 					disabled={loading}
 					additionalProps={{
 						btnType: ButtonType.TEXT,
-						text: loading ? 'Fetching Data...' : 'Check',
+						text: loading ? 'Fetching data...' : 'Fetch vacations',
 					}}
 				/>
 				<Button
 					onClick={resetVacations}
 					disabled={false}
+					variant="secondary"
 					additionalProps={{
 						btnType: ButtonType.TEXT,
-						text: 'Reset',
+						text: 'Clear',
 					}}
 				/>
 			</div>

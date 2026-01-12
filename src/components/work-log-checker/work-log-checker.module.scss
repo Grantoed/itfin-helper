@@ -1,9 +1,10 @@
 .wrapper {
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 	justify-content: center;
 	flex-direction: column;
 	gap: 16px;
+	width: 100%;
 }
 
 .error {
@@ -118,8 +119,9 @@
 .controlsContainer {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	align-items: stretch;
 	gap: 16px;
+	width: 100%;
 }
 
 .teamSelector {
