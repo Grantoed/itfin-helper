@@ -16,7 +16,6 @@ export async function handleProjectIncomeRequest(
 	fromDate: string,
 	toDate: string
 ) {
-	// If already running, do not start a duplicate
 	if (hasActiveController(SCOPE)) {
 		await broadcastToPopup({
 			type: 'PROJECT_INCOME_PROGRESS',
@@ -44,27 +43,19 @@ export async function handleProjectIncomeRequest(
 			progress: 'Fetching the first page results...',
 		});
 
-		// Kick off first two pages in parallel
+		// Kick off first two pages in parallel so we learn the total ASAP.
 		const firstPagePromise = makeRequest<any>(
-			`/tracking/projects-summary?page=1&filter[from]=${encodeURIComponent(
-				fromDate
-			)}&filter[to]=${encodeURIComponent(toDate)}`,
+			`/tracking/projects-summary?page=1&filter[from]=${encodeURIComponent(fromDate)}&filter[to]=${encodeURIComponent(toDate)}`,
 			jwt,
 			signal
 		);
 		const secondPagePromise = makeRequest<any>(
-			`/tracking/projects-summary?page=2&filter[from]=${encodeURIComponent(
-				fromDate
-			)}&filter[to]=${encodeURIComponent(toDate)}`,
+			`/tracking/projects-summary?page=2&filter[from]=${encodeURIComponent(fromDate)}&filter[to]=${encodeURIComponent(toDate)}`,
 			jwt,
 			signal
 		);
 
-		// Wait for the first response to know total pages ASAP
-		const firstCompleted = await Promise.race([
-			firstPagePromise,
-			secondPagePromise,
-		]);
+		const firstCompleted = await Promise.race([firstPagePromise, secondPagePromise]);
 
 		const totalProjects = firstCompleted.Count;
 		const totalPages = Math.ceil(totalProjects / MAX_PROJECTS_PER_PAGE);
@@ -92,7 +83,6 @@ export async function handleProjectIncomeRequest(
 				if (!receivedPages.has(1)) {
 					receivedPages.set(1, true);
 					allProjects.push(...(response.Projects || []));
-					// Update progress after page 1
 					chrome.storage.local.set({
 						[STORAGE_KEYS.REQUEST_STATE]: {
 							type: 'PROJECT_INCOME',
@@ -116,7 +106,6 @@ export async function handleProjectIncomeRequest(
 				if (!receivedPages.has(2)) {
 					receivedPages.set(2, true);
 					allProjects.push(...(response.Projects || []));
-					// Update progress after page 2
 					chrome.storage.local.set({
 						[STORAGE_KEYS.REQUEST_STATE]: {
 							type: 'PROJECT_INCOME',
@@ -135,68 +124,34 @@ export async function handleProjectIncomeRequest(
 			})
 		);
 
-		if (totalPages <= 1) {
-			await Promise.allSettled(pagePromises);
-
-			await setRequestState({
-				type: 'PROJECT_INCOME',
-				loading: true,
-				progress: `Completed! Fetched 1 page of 1 total.`,
-			});
-
-			await broadcastToPopup({
-				type: 'PROJECT_INCOME_PROGRESS',
-				success: true,
-				progress: `Completed! Fetched 1 page of 1 total.`,
-			});
-		} else {
-			// Add remaining pages (starting from page 3)
-			for (let page = 3; page <= totalPages; page++) {
-				pagePromises.push(
-					makeRequest<any>(
-						`/tracking/projects-summary?page=${page}&filter[from]=${encodeURIComponent(
-							fromDate
-						)}&filter[to]=${encodeURIComponent(toDate)}`,
-						jwt,
-						signal
-					).then(response => {
-						receivedPages.set(page, true);
-						allProjects.push(...(response.Projects || []));
-						// Update request state
-						chrome.storage.local.set({
-							[STORAGE_KEYS.REQUEST_STATE]: {
-								type: 'PROJECT_INCOME',
-								loading: true,
-								progress: `Fetched ${receivedPages.size} of ${totalPages} pages...`,
-								timestamp: Date.now(),
-							},
-						});
-
-						broadcastToPopup({
-							type: 'PROJECT_INCOME_PROGRESS',
-							success: true,
+		for (let page = 3; page <= totalPages; page++) {
+			pagePromises.push(
+				makeRequest<any>(
+					`/tracking/projects-summary?page=${page}&filter[from]=${encodeURIComponent(fromDate)}&filter[to]=${encodeURIComponent(toDate)}`,
+					jwt,
+					signal
+				).then(response => {
+					receivedPages.set(page, true);
+					allProjects.push(...(response.Projects || []));
+					chrome.storage.local.set({
+						[STORAGE_KEYS.REQUEST_STATE]: {
+							type: 'PROJECT_INCOME',
+							loading: true,
 							progress: `Fetched ${receivedPages.size} of ${totalPages} pages...`,
-						});
-						return response;
-					})
-				);
-			}
-
-			if (pagePromises.length > 0) {
-				await Promise.allSettled(pagePromises);
-			}
-			await setRequestState({
-				type: 'PROJECT_INCOME',
-				loading: true,
-				progress: `Completed! Fetched ${receivedPages.size} pages of ${totalPages} total.`,
-				timestamp: Date.now(),
-			});
-			await broadcastToPopup({
-				type: 'PROJECT_INCOME_PROGRESS',
-				success: true,
-				progress: `Completed! Fetched ${receivedPages.size} pages of ${totalPages} total.`,
-			});
+							timestamp: Date.now(),
+						},
+					});
+					broadcastToPopup({
+						type: 'PROJECT_INCOME_PROGRESS',
+						success: true,
+						progress: `Fetched ${receivedPages.size} of ${totalPages} pages...`,
+					});
+					return response;
+				})
+			);
 		}
+
+		await Promise.allSettled(pagePromises);
 
 		const totalIncome = allProjects.reduce(
 			(sum: number, project: any) => sum + project.Income,
@@ -210,11 +165,9 @@ export async function handleProjectIncomeRequest(
 			timestamp: Date.now(),
 		};
 
-		// Save to storage and clear request state
 		await cacheData(STORAGE_KEYS.PROJECT_INCOME, result);
 		await clearRequestState();
 
-		// Send result
 		await broadcastToPopup({
 			type: 'PROJECT_INCOME_SUCCESS',
 			success: true,

@@ -40,9 +40,9 @@ const useWorkLogChecker = (jwt: string) => {
 					const stored = await chrome.storage.local.get([
 						LAST_SELECTED_TEAM_KEY,
 					]);
-					const savedTeamId = stored?.[LAST_SELECTED_TEAM_KEY];
-					if (savedTeamId) {
-						setSelectedTeam(savedTeamId);
+				const savedTeamId = stored?.[LAST_SELECTED_TEAM_KEY] as string | undefined;
+				if (savedTeamId) {
+					setSelectedTeam(savedTeamId);
 						return;
 					}
 				}

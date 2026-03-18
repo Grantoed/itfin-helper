@@ -7,12 +7,17 @@ import { handleVacationsRequest } from './requests/vacations';
 
 export function setupMessageListener() {
 	chrome.runtime.onMessage.addListener(
-		(message: MessageRequest, sender, sendResponse) => {
+		(message: MessageRequest, _sender, sendResponse) => {
 			(async () => {
 				try {
 					switch (message.type) {
+						// IMPORTANT: handleProjectIncomeRequest is awaited so that
+						// sendResponse is only called after the entire fetch completes.
+						// Chrome's onMessage contract keeps the service worker alive as
+						// long as a sendResponse call is pending (return true below), so
+						// awaiting here prevents the SW from being terminated mid-fetch.
 						case 'FETCH_PROJECT_INCOME':
-							handleProjectIncomeRequest(
+							await handleProjectIncomeRequest(
 								message.payload.jwt,
 								message.payload.fromDate,
 								message.payload.toDate
@@ -68,7 +73,9 @@ export function setupMessageListener() {
 				}
 			})();
 
-			// Return true to indicate we will send a response asynchronously
+			// Returning true keeps the message channel open so sendResponse can
+			// be called asynchronously. This also signals Chrome to keep the
+			// service worker alive until sendResponse fires.
 			return true;
 		}
 	);
