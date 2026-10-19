@@ -1,81 +1,59 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import Calendar from '../../calendar/calendar.component';
-import Button from '../../shared/button/button.component';
-import { ButtonType } from '../../shared/button/button.types';
-import Dropdown from './dropdown.component';
+import Dropdown, { DropdownOption } from './dropdown.component';
 import * as styles from '../work-log-checker.module.scss';
-
-const classNames = styles as typeof styles & {
-	checkboxesRow: string;
-};
-
-type TeamOption = {
-	value: string;
-	label: string;
-};
 
 type WorkLogControlsProps = {
 	fromDate: string;
 	toDate: string;
-	setFromDate: Dispatch<SetStateAction<string>>;
-	setToDate: Dispatch<SetStateAction<string>>;
-	teamOptions: TeamOption[];
-	selectedTeam?: string;
-	setSelectedTeam: Dispatch<SetStateAction<string>>;
+	onDatesChange: (fromDate: string, toDate: string) => void;
+	teamOptions: DropdownOption[];
+	selectedTeam: string;
+	setSelectedTeam: (teamId: string) => void;
 	loadingTeams: boolean;
 	loading: boolean;
-	jwt: string;
-	fetchWorkLogs: () => void;
-	resetWorkLogs: () => void;
 	hideFreelancers: boolean;
-	setHideFreelancers: Dispatch<SetStateAction<boolean>>;
-	showMarkdown: boolean;
-	setShowMarkdown: Dispatch<SetStateAction<boolean>>;
-	markdownToggleDisabled: boolean;
-	showClearButton: boolean;
+	setHideFreelancers: (value: boolean) => void;
 };
 
 const WorkLogControls = ({
 	fromDate,
 	toDate,
-	setFromDate,
-	setToDate,
+	onDatesChange,
 	teamOptions,
 	selectedTeam,
 	setSelectedTeam,
 	loadingTeams,
 	loading,
-	jwt,
-	fetchWorkLogs,
-	resetWorkLogs,
 	hideFreelancers,
 	setHideFreelancers,
-	showMarkdown,
-	setShowMarkdown,
-	markdownToggleDisabled,
-	showClearButton,
 }: WorkLogControlsProps) => {
+	// A saved team may have disappeared from the list; keep it selectable
+	const options = teamOptions.some(option => option.value === selectedTeam)
+		? teamOptions
+		: [...teamOptions, { value: selectedTeam, label: `Team #${selectedTeam}` }];
+
 	return (
 		<>
 			<Calendar
 				fromDate={fromDate}
 				toDate={toDate}
-				setFromDate={setFromDate}
-				setToDate={setToDate}
+				onChange={onDatesChange}
+				disabled={loading}
 			/>
 			<div className={styles.controlsContainer}>
 				<div className={styles.teamSelector}>
-					<label htmlFor="team-select">Select Team:</label>
+					<label htmlFor="team-select">Team</label>
 					<Dropdown
 						id="team-select"
-						options={teamOptions}
+						options={options}
 						value={selectedTeam}
-						onChange={value => setSelectedTeam(value)}
-						disabled={loadingTeams}
-						placeholder={loadingTeams ? 'Loading teams...' : 'Select a team'}
+						onChange={setSelectedTeam}
+						disabled={loading || loadingTeams}
+						placeholder={loadingTeams ? 'Loading teams…' : 'Select a team'}
 					/>
 				</div>
-				<div className={classNames.checkboxesRow}>
+				<div className={styles.checkboxesRow}>
 					<div className={styles.checkboxContainer}>
 						<input
 							type="checkbox"
@@ -83,38 +61,9 @@ const WorkLogControls = ({
 							checked={hideFreelancers}
 							onChange={e => setHideFreelancers(e.target.checked)}
 						/>
-						<label htmlFor="hide-freelancers">Hide Freelancers</label>
-					</div>
-					<div className={styles.checkboxContainer}>
-						<input
-							type="checkbox"
-							id="markdown-toggle"
-							checked={showMarkdown}
-							onChange={e => setShowMarkdown(e.target.checked)}
-							disabled={markdownToggleDisabled}
-						/>
-						<label htmlFor="markdown-toggle">Show markdown view</label>
+						<label htmlFor="hide-freelancers">Hide freelancers</label>
 					</div>
 				</div>
-				<Button
-					onClick={fetchWorkLogs}
-					disabled={!jwt || loading || !selectedTeam}
-					additionalProps={{
-						btnType: ButtonType.TEXT,
-						text: loading ? 'Fetching data...' : 'Fetch work logs',
-					}}
-				/>
-				{showClearButton && (
-					<Button
-						onClick={resetWorkLogs}
-						disabled={!jwt || !selectedTeam ? true : false}
-						variant="secondary"
-						additionalProps={{
-							btnType: ButtonType.TEXT,
-							text: 'Clear',
-						}}
-					/>
-				)}
 			</div>
 		</>
 	);

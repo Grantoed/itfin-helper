@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import Container from '../shared/container/container.component';
-import Heading from '../shared/heading/heading.component';
+import ResultsHeader from '../shared/copy-button/results-header.component';
+import MarkdownText from '../shared/copy-button/markdown-text.component';
+import {
+	TaskActions,
+	TaskStatus,
+} from '../shared/task-status/task-status.component';
 import useWorkLogChecker from '../../hooks/use-work-log-checker.hook';
+import { PREF_KEYS } from '../../shared/constants';
+import { usePersistentState } from '../../utils/store.util';
+import { formatTime } from '../../utils/work-log.utils';
 import * as styles from './work-log-checker.module.scss';
 import WorkLogControls from './components/work-log-controls.component';
-import MarkdownView from './components/markdown-view.component';
 import ResultsList from './components/results-list.component';
 
 type Props = {
@@ -13,72 +20,103 @@ type Props = {
 
 const WorkLogChecker = ({ jwt }: Props) => {
 	const {
-		fromDate,
-		toDate,
-		employees,
+		params,
+		setParams,
 		loading,
+		progress,
+		startedAt,
 		error,
-		fetched,
-		fetchWorkLogs,
-		resetWorkLogs,
-		setFromDate,
-		setToDate,
-		teams,
+		result,
+		start,
+		cancel,
+		clear,
+		teamOptions,
 		loadingTeams,
-		selectedTeam,
 		setSelectedTeam,
 		hideFreelancers,
 		setHideFreelancers,
+		summaries,
 	} = useWorkLogChecker(jwt);
-	const [showMarkdown, setShowMarkdown] = useState(false);
+	const [showMarkdown, setShowMarkdown] = usePersistentState(
+		PREF_KEYS.MARKDOWN_WORK_LOGS,
+		false
+	);
 
-	const showClearButton = loading || employees.length > 0;
+	const markdownText = useMemo(
+		() =>
+			(summaries ?? [])
+				.map(
+					({ employee, deficit }) =>
+						`- ${employee.FirstName} ${
+							employee.LastName
+						} — Underworked ${formatTime(deficit)}`
+				)
+				.join('\n'),
+		[summaries]
+	);
 
-	const teamOptions = [
-		{ value: '28', label: 'Team Delivery' },
-		...(teams?.map(team => ({ value: team.Id.toString(), label: team.Name })) ||
-			[]),
-	];
-	const markdownToggleDisabled = !employees.length;
+	const hasSummaries = Boolean(summaries?.length);
 
 	return (
 		<Container>
-			<Heading>Work Log Checker</Heading>
 			<div className={styles.wrapper}>
 				<WorkLogControls
-					fromDate={fromDate}
-					toDate={toDate}
-					setFromDate={setFromDate}
-					setToDate={setToDate}
+					fromDate={params.fromDate}
+					toDate={params.toDate}
+					onDatesChange={(fromDate, toDate) =>
+						setParams(current => ({ ...current, fromDate, toDate }))
+					}
 					teamOptions={teamOptions}
-					selectedTeam={selectedTeam}
+					selectedTeam={params.teamId}
 					setSelectedTeam={setSelectedTeam}
 					loadingTeams={loadingTeams}
 					loading={loading}
-					jwt={jwt}
-					fetchWorkLogs={fetchWorkLogs}
-					resetWorkLogs={resetWorkLogs}
 					hideFreelancers={hideFreelancers}
 					setHideFreelancers={setHideFreelancers}
-					showMarkdown={showMarkdown}
-					setShowMarkdown={setShowMarkdown}
-					markdownToggleDisabled={markdownToggleDisabled}
-					showClearButton={showClearButton}
+				/>
+				<TaskActions
+					fetchLabel="Fetch work logs"
+					loading={loading}
+					disabled={!params.teamId}
+					canClear={Boolean(result || error)}
+					onFetch={start}
+					onCancel={cancel}
+					onClear={clear}
+				/>
+				<TaskStatus
+					progress={progress}
+					error={error}
+					startedAt={startedAt}
+					fetchedAt={result?.timestamp}
 				/>
 			</div>
 
-			{error && <p className={styles.error}>{error}</p>}
-
-			{fetched && !loading && employees.length === 0 && (
-				<p className={styles.noData}>No data available.</p>
+			{summaries && !loading && !hasSummaries && (
+				<p className={styles.noData}>
+					{result?.data.employees.length
+						? 'Everyone logged their full hours for this period.'
+						: 'No employees found for this team and period.'}
+				</p>
 			)}
 
-			{employees.length > 0 && (
+			{hasSummaries && !loading && (
 				<>
+					<ResultsHeader
+						copyText={markdownText}
+						markdown={{
+							shown: showMarkdown,
+							onToggle: () => setShowMarkdown(!showMarkdown),
+						}}
+					>
+						Didn't log full time ({summaries!.length})
+					</ResultsHeader>
 					{showMarkdown ? (
-						<MarkdownView employees={employees} />
+						<MarkdownText
+							text={markdownText}
+							label="Work log gaps as markdown"
+						/>
 					) : (
-						<ResultsList employees={employees} />
+						<ResultsList summaries={summaries!} />
 					)}
 				</>
 			)}

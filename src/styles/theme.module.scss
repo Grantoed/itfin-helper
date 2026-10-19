@@ -1,28 +1,134 @@
+// Design tokens taken from ITFin's two themes (keenethics.itfin.io): night
+// mode (data-theme="dark") is the default, light mode overrides it below.
+// Components use only these tokens, never raw colours.
 :root {
-	/* Color Palette */
-	--white: #fff;
-	--bg-color: #232529;
-	--alt-bg-color: #343434;
-	--btn-bg-color: #464a53;
-	--input-bg-color: #383b41;
-	--btn-hover-color: #5d636f;
-	--text-color: #ddd;
-	--accent-color: #ffcc00;
-	--hover-color: #3d3d3d;
-	--error-color: #e84e4f;
-	--success-color: #376e37;
+	color-scheme: dark;
+
+	/* Surfaces */
+	--body-bg: #1b1f22; // --bs-body-bg
+	--card-bg: #232529; // --bs-card-bg
+	--card-border: rgba(255, 255, 255, 0.176); // .card border (2px)
+	--inset-bg: #1b1f22; // items nested inside a card
+	--input-bg: #383b41; // .form-control
+	--input-focus-bg: #3d3d3d; // .form-control:focus
+	--input-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
+	--input-focus-ring: 0 0 0 0.125rem rgba(244, 206, 176, 0.25);
+	--segment-bg: #383b41; // .itf-segmeneted-control
+	--segment-hover-bg: rgba(255, 255, 255, 0.05);
+	--segment-selected-bg: #222; // .itf-segmeneted-control .selection
+	--segment-selected-shadow: none;
+	--row-divider: rgba(255, 255, 255, 0.06);
+	--dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+	/* Text */
+	--text-color: #ddd; // --bs-body-color
+	--text-muted: #9b9b9b;
+	--link-color: #ead272; // --bs-link-color
+	--link-hover-color: #e3c446;
+
+	/* Buttons */
+	--primary: #fc0; // --color-primary
+	--primary-hover: #cca300;
+	--primary-active: #e6b800;
+	--primary-ring: #917915;
+	--on-primary: #212529;
+	--secondary: #464a53; // .btn-secondary
+	--secondary-hover: #5d636f;
+	--secondary-active: #525661;
+	--on-secondary: #ddd;
+	--basic-btn-bg: rgba(246, 225, 189, 0.08); // --itf-button-basic-bg-color
+	--basic-btn-hover-bg: rgba(246, 225, 189, 0.16);
+
+	/* Status */
+	--danger: #cb4839; // --bs-danger
+	--success: #10834e; // --bs-success
+	--danger-text: #e0705f; // lighter tints so small text stays readable
+	--success-text: #2fb874;
+	--error-bg: rgba(203, 72, 57, 0.15);
+	--purple: #7b52eb; // --itf-tooltip-bg-color
+	--neutral-badge-bg: #464a53;
+	--vacation-bg: #806600; // calendar time-off events
+	--vacation-color: #fff;
+
+	/* Shape */
+	--radius: 8px;
+	--radius-sm: 6px;
+	--radius-input: 8px;
+	--radius-pill: 800px;
 
 	/* Fonts */
 	--main-font: 'Fira Sans', sans-serif;
 	--alt-font: 'Fira Mono', monospace;
 
-	/* Calendar */
-
-	--adp-cell-background-color-selected: #ffcc00;
+	/* Date picker (ITFin's .air-datepicker values) */
+	--adp-cell-background-color-selected: #fc0;
 	--adp-cell-background-color-selected-hover: #ffd633;
-	--adp-color-current-date: #ffcc00;
-	--bs-card-border-color: rgba(255, 255, 255, 0.175);
+	--adp-cell-background-color-in-range: #3d3d3d;
+	--adp-background-color-hover: #806600;
+	--adp-border-color-inner: #5e636e;
+	--adp-day-name-color: #bfbfbf;
 
-	/* Transition: */
-	--transition: linear 300ms;
+	--transition: 150ms ease;
+
+	/* Aliases used by older styles */
+	--white: #fff;
+	--bg-color: var(--card-bg);
+	--accent-color: var(--primary);
+	--error-color: var(--danger);
+	--success-color: var(--success);
+	--hover-color: var(--input-focus-bg);
+}
+
+// ITFin light mode
+:root[data-theme='light'] {
+	color-scheme: light;
+
+	--body-bg: #fff; // --bs-body-bg
+	--card-bg: #fff;
+	--card-border: rgba(0, 0, 0, 0.176);
+	--inset-bg: #f8f9fa; // --bs-tertiary-bg
+	--input-bg: #f3f3f3; // .form-control
+	--input-focus-bg: #fff;
+	--input-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+	--input-focus-ring: 0 0 0 0.25rem rgba(11, 49, 79, 0.25);
+	--segment-bg: #f3f3f3;
+	--segment-hover-bg: rgba(0, 0, 0, 0.04);
+	--segment-selected-bg: #fff;
+	--segment-selected-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+		0 0 0 1px rgba(0, 0, 0, 0.04);
+	--row-divider: #eee; // --itf-table-divider-border
+	--dropdown-shadow: 0 8px 24px rgba(36, 40, 47, 0.18);
+
+	--text-color: #212529;
+	--text-muted: rgba(33, 37, 41, 0.75); // --bs-secondary-color
+	--link-color: #0b314f;
+	--link-hover-color: #09273f;
+
+	--primary: #0b314f; // --bs-primary
+	--primary-hover: #234661; // 10% white mix, as ITFin
+	--primary-active: #09273f;
+	--primary-ring: rgba(11, 49, 79, 0.25);
+	--on-primary: #fff;
+	--secondary: #f5f6f8; // .btn-secondary
+	--secondary-hover: #dddee0; // 10% black mix, as ITFin
+	--secondary-active: #d0d1d3;
+	--on-secondary: #212529;
+	--basic-btn-bg: rgba(9, 30, 66, 0.08);
+	--basic-btn-hover-bg: rgba(9, 30, 66, 0.14);
+
+	--danger-text: #b91e1e; // --color-outcome
+	--success-text: #0d935b; // --color-income
+	--error-bg: rgba(203, 72, 57, 0.08);
+	--neutral-badge-bg: #6c757d; // --bs-gray-600
+	--vacation-bg: #f5a623;
+	--vacation-color: #212529;
+
+	--radius-input: 10px;
+
+	--adp-cell-background-color-selected: #0b314f;
+	--adp-cell-background-color-selected-hover: #114d7c;
+	--adp-cell-background-color-in-range: #ced6dc;
+	--adp-background-color-hover: #f0f0f0;
+	--adp-border-color-inner: #efefef;
+	--adp-day-name-color: #666;
 }

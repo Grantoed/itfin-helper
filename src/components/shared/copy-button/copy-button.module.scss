@@ -1,0 +1,39 @@
+// ITFin .itf-button.btn-basic (small uppercase text button)
+.copyButton {
+	flex-shrink: 0;
+	padding: 4px 8px;
+	border: 2px solid transparent;
+	border-radius: var(--radius-sm);
+	background-color: var(--basic-btn-bg);
+	color: var(--text-color);
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: background-color var(--transition);
+
+	&:hover:not(:disabled) {
+		background-color: var(--basic-btn-hover-bg);
+	}
+
+	// Toggle buttons when switched on, with ITFin's primary hover
+	&[aria-pressed='true'] {
+		background-color: var(--primary);
+		color: var(--on-primary);
+
+		&:hover:not(:disabled) {
+			background-color: var(--primary-hover);
+		}
+	}
+
+	&:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 0.125rem var(--primary-ring);
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+}

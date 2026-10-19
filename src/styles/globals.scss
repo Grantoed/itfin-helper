@@ -1,102 +1,86 @@
 @use './theme.module.scss';
-@import 'https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
-@import 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
+// Only the weights the UI actually uses
+@import 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap';
 @import 'react-datepicker/dist/react-datepicker.css';
 
-.react-datepicker-wrapper {
-	width: 100%;
+// Date picker restyled after ITFin's dark .air-datepicker
+.react-datepicker {
+	font-family: var(--main-font);
+	background-color: var(--card-bg);
+	color: var(--text-color);
+	border: 2px solid var(--card-border);
+	border-radius: var(--radius);
+}
+
+.react-datepicker-popper .react-datepicker__triangle {
+	display: none;
 }
 
 .react-datepicker__header {
-	background-color: var(--bg-color);
-	color: var(--text-color);
-	border-color: var(--bs-card-border-color);
-
-	& * {
-		color: inherit;
-	}
+	background-color: var(--card-bg);
+	border-bottom: 1px solid var(--adp-border-color-inner);
+	border-top-left-radius: var(--radius);
+	border-top-right-radius: var(--radius);
 }
 
-.react-datepicker__month {
-	color: var(--white);
+.react-datepicker__current-month {
+	color: var(--text-color);
+	font-weight: 500;
+}
 
-	& * {
-		color: inherit;
-	}
+.react-datepicker__day-name {
+	color: var(--adp-day-name-color);
+}
+
+.react-datepicker__navigation-icon::before {
+	border-color: var(--text-muted);
 }
 
 .react-datepicker__day {
-	&--in-range {
-		background-color: var(--hover-color);
+	color: var(--text-color);
+	border-radius: var(--radius-sm);
+
+	&:not([aria-disabled='true']):hover {
+		background-color: var(--adp-background-color-hover);
+		border-radius: var(--radius-sm);
 	}
 
-	&--selected {
-		color: var(--bg-color);
-		background-color: var(--adp-cell-background-color-selected);
-	}
-
-	&--selecting-range-start {
-		background-color: var(--adp-cell-background-color-selected) !important;
-	}
-
-	&--selecting-range-end {
-		background-color: var(
-			--adp-cell-background-color-selected-hover
-		) !important;
-	}
-
-	&--range-end {
-		color: var(--bg-color);
-		background-color: var(
-			--adp-cell-background-color-selected-hover
-		) !important;
+	&--outside-month {
+		color: var(--text-muted);
+		opacity: 0.6;
 	}
 
 	&--today {
-		color: var(--white);
-		border: 1px solid var(--white);
-		border-radius: 10px;
+		color: var(--primary);
+		font-weight: 600;
 	}
-}
 
-.react-datepicker__day--in-selecting-range:not(
-		.react-datepicker__day--in-range,
-		.react-datepicker__month-text--in-range,
-		.react-datepicker__quarter-text--in-range,
-		.react-datepicker__year-text--in-range
-	),
-.react-datepicker__month-text--in-selecting-range:not(
-		.react-datepicker__day--in-range,
-		.react-datepicker__month-text--in-range,
-		.react-datepicker__quarter-text--in-range,
-		.react-datepicker__year-text--in-range
-	),
-.react-datepicker__quarter-text--in-selecting-range:not(
-		.react-datepicker__day--in-range,
-		.react-datepicker__month-text--in-range,
-		.react-datepicker__quarter-text--in-range,
-		.react-datepicker__year-text--in-range
-	),
-.react-datepicker__year-text--in-selecting-range:not(
-		.react-datepicker__day--in-range,
-		.react-datepicker__month-text--in-range,
-		.react-datepicker__quarter-text--in-range,
-		.react-datepicker__year-text--in-range
-	) {
-	background-color: var(--hover-color);
-}
+	&--in-range,
+	&--in-selecting-range:not(&--in-range) {
+		background-color: var(--adp-cell-background-color-in-range);
+		color: var(--text-color);
+	}
 
-.react-datepicker__day:not([aria-disabled='true']):hover,
-.react-datepicker__month-text:not([aria-disabled='true']):hover,
-.react-datepicker__quarter-text:not([aria-disabled='true']):hover,
-.react-datepicker__year-text:not([aria-disabled='true']):hover {
-	background-color: var(--adp-cell-background-color-selected-hover);
+	&--selected,
+	&--range-start,
+	&--range-end,
+	&--selecting-range-start,
+	&--selecting-range-end,
+	&--keyboard-selected {
+		background-color: var(--adp-cell-background-color-selected) !important;
+		color: var(--on-primary) !important;
+	}
+
+	&--range-end:hover,
+	&--selected:hover {
+		background-color: var(--adp-cell-background-color-selected-hover) !important;
+	}
 }
 
 body {
 	font-family: var(--main-font);
 	color: var(--text-color);
-	background-color: var(--bg-color);
+	background-color: var(--body-bg);
 	margin: 0;
 	line-height: normal;
 	-webkit-font-smoothing: antialiased;
@@ -117,11 +101,24 @@ body {
 * {
 	margin: 0;
 	padding: 0;
+}
 
-	&:hover,
-	&:focus,
-	&:active {
-		outline: none;
+// Hide the focus ring for mouse users but keep it for keyboard navigation
+:focus:not(:focus-visible) {
+	outline: none;
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent-color);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
 	}
 }
 
@@ -159,6 +156,11 @@ h6 {
 button {
 	cursor: pointer;
 	font-family: inherit;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+	accent-color: var(--primary);
 }
 
 .visually-hidden {

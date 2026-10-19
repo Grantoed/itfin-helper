@@ -2,11 +2,21 @@ import React from 'react';
 import Calendar from '../calendar/calendar.component';
 import WorkingDaysProgress from '../working-days-progress/working-days-progress.component';
 import Container from '../shared/container/container.component';
-import Heading from '../shared/heading/heading.component';
-import Button from '../shared/button/button.component';
-import { ButtonType } from '../shared/button/button.types';
+import {
+	TaskActions,
+	TaskStatus,
+} from '../shared/task-status/task-status.component';
+import IncomeProgress from './components/income-progress.component';
 import useProjectIncomeData from '../../hooks/use-project-income-data.hook';
-import { formatDate } from '../../utils/format-date.util';
+import useHolidays from '../../hooks/use-holidays.hook';
+import {
+	countWorkingDays,
+	formatDate,
+	formatTimestamp,
+	getMonthKey,
+	getToday,
+} from '../../utils/date.utils';
+import { formatUsd } from '../../utils/income.utils';
 import * as styles from './project-income-data.module.scss';
 
 type Props = {
@@ -15,82 +25,78 @@ type Props = {
 
 const ProjectIncomeData = ({ jwt }: Props) => {
 	const {
-		getProjectIncomeData,
-		resetProjectIncome,
+		params,
+		setParams,
 		loading,
-		income,
-		fromDate,
-		setFromDate,
-		toDate,
-		setToDate,
 		progress,
+		startedAt,
 		error,
-		fetchedAt,
+		result,
+		start,
+		cancel,
+		clear,
 	} = useProjectIncomeData();
-	const showClearButton = loading || income !== null || !!progress;
-	const hasIncome = !loading && income !== null;
-
-	const formatTimestamp = (value: number) => {
-		return new Date(value).toLocaleString(undefined, {
-			dateStyle: 'medium',
-			timeStyle: 'short',
-		});
-	};
+	const holidays = useHolidays(jwt);
+	const workingDays = countWorkingDays(new Date(), holidays);
+	const currentMonth = getMonthKey(getToday());
 
 	return (
 		<Container>
-			<Heading>Project Income</Heading>
 			<div className={styles.wrapper}>
 				<Calendar
-					fromDate={fromDate}
-					toDate={toDate}
-					setFromDate={setFromDate}
-					setToDate={setToDate}
+					fromDate={params.fromDate}
+					toDate={params.toDate}
+					onChange={(fromDate, toDate) => setParams({ fromDate, toDate })}
+					disabled={loading}
 				/>
-				<Button
-					onClick={getProjectIncomeData}
-					disabled={!jwt || loading}
-					additionalProps={{
-						btnType: ButtonType.TEXT,
-						text: loading ? 'Fetching data...' : 'Fetch income',
-					}}
+				<TaskActions
+					fetchLabel="Fetch income"
+					loading={loading}
+					canClear={Boolean(result || error)}
+					onFetch={start}
+					onCancel={cancel}
+					onClear={clear}
 				/>
-				{showClearButton && (
-					<Button
-						onClick={resetProjectIncome}
-						disabled={!jwt ? true : false}
-						variant="secondary"
-						additionalProps={{
-							btnType: ButtonType.TEXT,
-							text: 'Clear',
-						}}
-					/>
-				)}
+				<TaskStatus progress={progress} error={error} startedAt={startedAt} />
 
-				{error && <p className={styles.error}>{error}</p>}
-
-				{progress && <p className={styles.text}>{progress}</p>}
-
-				{hasIncome && (
+				{result && !loading && (
 					<div className={styles.resultCard}>
 						<div className={styles.resultHeader}>
-							<p className={styles.resultTitle}>Income results</p>
-							{fetchedAt && (
-								<p className={styles.meta}>
-									<span className={styles.metaLabel}>Fetched:</span>{' '}
-									{formatTimestamp(fetchedAt)}
-								</p>
-							)}
+							<p className={styles.resultTitle}>Project income</p>
+							<p className={styles.meta}>{result.data.projectCount} projects</p>
 						</div>
-						<p className={styles.resultValue}>{`$${income!.toFixed(2)}`}</p>
+						<p className={styles.resultValue}>
+							{formatUsd(result.data.income)}
+						</p>
 						<p className={styles.meta}>
 							<span className={styles.metaLabel}>Period:</span>{' '}
-							{`${formatDate(fromDate)} – ${formatDate(toDate)}`}
+							{`${formatDate(result.params.fromDate)} – ${formatDate(
+								result.params.toDate
+							)}`}
 						</p>
+						<p className={styles.meta}>
+							<span className={styles.metaLabel}>Fetched:</span>{' '}
+							{formatTimestamp(result.timestamp)}
+						</p>
+						{getMonthKey(result.params.fromDate) === currentMonth ? (
+							<IncomeProgress
+								income={result.data.income}
+								month={currentMonth}
+								workingDays={workingDays}
+							/>
+						) : (
+							<p className={styles.note}>
+								Planned vs. earned progress is shown when the period starts in
+								the current month.
+							</p>
+						)}
 					</div>
 				)}
 			</div>
-			<WorkingDaysProgress />
+			<WorkingDaysProgress
+				workingDays={workingDays}
+				holidayCount={holidays?.length ?? 0}
+			/>
 		</Container>
 	);
 };

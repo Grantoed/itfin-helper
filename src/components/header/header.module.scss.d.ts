@@ -5,3 +5,5 @@ export declare const titleRow: string;
 export declare const statusChip: string;
 export declare const statusChipSuccess: string;
 export declare const statusChipWarning: string;
+export declare const link: string;
+export declare const headerActions: string;

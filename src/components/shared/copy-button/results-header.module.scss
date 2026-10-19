@@ -1,0 +1,40 @@
+.resultsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 30px;
+}
+
+.title {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-muted);
+}
+
+.actions {
+	display: flex;
+	gap: 6px;
+}
+
+// Read-only markdown of a result list, styled as an ITFin .form-control
+.markdown {
+	width: 100%;
+	min-height: 180px;
+	padding: 10px 12px;
+	border: 1px solid var(--input-bg);
+	border-radius: var(--radius-input);
+	background-color: var(--input-bg);
+	box-shadow: var(--input-shadow);
+	color: var(--text-color);
+	font-family: var(--alt-font);
+	font-size: 12px;
+	line-height: 1.5;
+	resize: vertical;
+
+	&:focus {
+		outline: none;
+		background-color: var(--input-focus-bg);
+		border-color: var(--input-focus-bg);
+	}
+}

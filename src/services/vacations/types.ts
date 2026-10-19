@@ -1,4 +1,10 @@
-type EventType = 'Weekend' | 'Vacation' | 'Unpaid' | 'Birthday';
+type EventType =
+	| 'Weekend'
+	| 'Holiday'
+	| 'Vacation'
+	| 'Unpaid'
+	| 'Birthday'
+	| 'Anniversary';
 
 interface BaseEvent {
 	Date: string;
@@ -51,7 +57,16 @@ interface BirthdayEvent extends BaseEvent {
 
 export type FilterType = 'company' | 'team';
 
-export type CalendarEvent = WeekendEvent | TimeoffEvent | BirthdayEvent;
+export interface HolidayEvent extends BaseEvent {
+	EventType: 'Holiday';
+	RefEntity: 'Holiday';
+}
+
+export type CalendarEvent =
+	| WeekendEvent
+	| HolidayEvent
+	| TimeoffEvent
+	| BirthdayEvent;
 
 export type GetVacationsResponseQuery = {
 	date: string;

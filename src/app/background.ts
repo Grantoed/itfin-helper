@@ -1,7 +1,12 @@
-// Background service worker orchestrator. Modules under `./background`
-// handle the actual work; this file just boots them.
+// Background service worker entry point. Modules under `./background` do the
+// actual work; this file just boots them.
 import { setupMessageListener } from './background/message-router';
-import { setupPopupBridge } from './background/popup-bridge';
+import { migrateLegacyStorage } from './background/migrations';
 
 setupMessageListener();
-setupPopupBridge();
+
+chrome.runtime.onInstalled.addListener(() => {
+	migrateLegacyStorage().catch(error =>
+		console.error('Failed to migrate storage:', error)
+	);
+});

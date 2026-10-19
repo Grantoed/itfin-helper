@@ -12,5 +12,6 @@
         "jsx": "react",
         "typeRoots": [ "node_modules/@types" ],
         "strictNullChecks": false,
+        "skipLibCheck": true
     }
 }
