@@ -4,36 +4,32 @@ import * as styles from '../vacations-list.module.scss';
 
 type Props = {
 	filterType: FilterType;
-	setFilterType: React.Dispatch<React.SetStateAction<FilterType>>;
+	setFilterType: (filterType: FilterType) => void;
+	disabled?: boolean;
 };
 
-const VacationFilter = ({ filterType, setFilterType }: Props) => {
-	return (
-		<div className={styles.filterContainer}>
-			<label className={styles.radioLabel}>
+const OPTIONS: { value: FilterType; label: string }[] = [
+	{ value: 'company', label: 'Company' },
+	{ value: 'team', label: 'Team' },
+];
+
+const VacationFilter = ({ filterType, setFilterType, disabled }: Props) => (
+	<div className={styles.filterContainer} role="radiogroup" aria-label="Scope">
+		{OPTIONS.map(({ value, label }) => (
+			<label key={value} className={styles.radioLabel}>
 				<input
 					type="radio"
-					name="filterType"
-					value="company"
-					checked={filterType === 'company'}
-					onChange={() => setFilterType('company')}
+					name="vacation-filter"
+					value={value}
+					checked={filterType === value}
+					onChange={() => setFilterType(value)}
+					disabled={disabled}
 					className={styles.radioInput}
 				/>
-				Company
+				{label}
 			</label>
-			<label className={styles.radioLabel}>
-				<input
-					type="radio"
-					name="filterType"
-					value="team"
-					checked={filterType === 'team'}
-					onChange={() => setFilterType('team')}
-					className={styles.radioInput}
-				/>
-				Team
-			</label>
-		</div>
-	);
-};
+		))}
+	</div>
+);
 
 export default VacationFilter;

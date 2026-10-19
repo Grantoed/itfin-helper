@@ -1,24 +1,18 @@
 import React from 'react';
-import {
-	workProgress,
-	getLastFriday,
-	MONTHS,
-} from '../../utils/calendar.utils';
+import { countWorkingDays, formatShortDate } from '../../utils/date.utils';
 import * as styles from './working-days-progress.module.scss';
 
 const WorkingDaysProgress = () => {
-	const formatTargetDate = () => {
-		const targetDateString = getLastFriday();
-		const targetDate = new Date(targetDateString);
-
-		return `${MONTHS[targetDate.getMonth()]} ${targetDate.getDate()}`;
-	};
+	const { passed, total, until } = countWorkingDays();
+	const percent = Math.round((passed / total) * 100);
 
 	return (
 		<section className={styles.wrapper}>
 			<p className={styles.daysProgressText}>
-				Working Days Progress (until {formatTargetDate()}):
-				<span className={styles.daysProgress}>{` ${workProgress}`}</span>
+				Working days progress (until {formatShortDate(until)}):
+				<span className={styles.daysProgress}>
+					{` ${passed}/${total} (${percent}%)`}
+				</span>
 			</p>
 		</section>
 	);

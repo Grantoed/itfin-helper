@@ -3,89 +3,69 @@ import Calendar from '../calendar/calendar.component';
 import WorkingDaysProgress from '../working-days-progress/working-days-progress.component';
 import Container from '../shared/container/container.component';
 import Heading from '../shared/heading/heading.component';
-import Button from '../shared/button/button.component';
-import { ButtonType } from '../shared/button/button.types';
+import { TaskActions, TaskStatus } from '../shared/task-status/task-status.component';
 import useProjectIncomeData from '../../hooks/use-project-income-data.hook';
-import { formatDate } from '../../utils/format-date.util';
+import { formatDate, formatTimestamp } from '../../utils/date.utils';
 import * as styles from './project-income-data.module.scss';
 
-type Props = {
-	jwt: string;
-};
+const currency = new Intl.NumberFormat('en-US', {
+	style: 'currency',
+	currency: 'USD',
+});
 
-const ProjectIncomeData = ({ jwt }: Props) => {
+const ProjectIncomeData = () => {
 	const {
-		getProjectIncomeData,
-		resetProjectIncome,
+		params,
+		setParams,
 		loading,
-		income,
-		fromDate,
-		setFromDate,
-		toDate,
-		setToDate,
 		progress,
 		error,
-		fetchedAt,
+		result,
+		start,
+		cancel,
+		clear,
 	} = useProjectIncomeData();
-	const showClearButton = loading || income !== null || !!progress;
-	const hasIncome = !loading && income !== null;
-
-	const formatTimestamp = (value: number) => {
-		return new Date(value).toLocaleString(undefined, {
-			dateStyle: 'medium',
-			timeStyle: 'short',
-		});
-	};
 
 	return (
 		<Container>
 			<Heading>Project Income</Heading>
 			<div className={styles.wrapper}>
 				<Calendar
-					fromDate={fromDate}
-					toDate={toDate}
-					setFromDate={setFromDate}
-					setToDate={setToDate}
+					fromDate={params.fromDate}
+					toDate={params.toDate}
+					onChange={(fromDate, toDate) => setParams({ fromDate, toDate })}
+					disabled={loading}
 				/>
-				<Button
-					onClick={getProjectIncomeData}
-					disabled={!jwt || loading}
-					additionalProps={{
-						btnType: ButtonType.TEXT,
-						text: loading ? 'Fetching data...' : 'Fetch income',
-					}}
+				<TaskActions
+					fetchLabel="Fetch income"
+					loading={loading}
+					canClear={Boolean(result || error)}
+					onFetch={start}
+					onCancel={cancel}
+					onClear={clear}
 				/>
-				{showClearButton && (
-					<Button
-						onClick={resetProjectIncome}
-						disabled={!jwt ? true : false}
-						variant="secondary"
-						additionalProps={{
-							btnType: ButtonType.TEXT,
-							text: 'Clear',
-						}}
-					/>
-				)}
+				<TaskStatus progress={progress} error={error} />
 
-				{error && <p className={styles.error}>{error}</p>}
-
-				{progress && <p className={styles.text}>{progress}</p>}
-
-				{hasIncome && (
+				{result && !loading && (
 					<div className={styles.resultCard}>
 						<div className={styles.resultHeader}>
-							<p className={styles.resultTitle}>Income results</p>
-							{fetchedAt && (
-								<p className={styles.meta}>
-									<span className={styles.metaLabel}>Fetched:</span>{' '}
-									{formatTimestamp(fetchedAt)}
-								</p>
-							)}
+							<p className={styles.resultTitle}>Income</p>
+							<p className={styles.meta}>
+								{result.data.projectCount} projects
+							</p>
 						</div>
-						<p className={styles.resultValue}>{`$${income!.toFixed(2)}`}</p>
+						<p className={styles.resultValue}>
+							{currency.format(result.data.income)}
+						</p>
 						<p className={styles.meta}>
 							<span className={styles.metaLabel}>Period:</span>{' '}
-							{`${formatDate(fromDate)} – ${formatDate(toDate)}`}
+							{`${formatDate(result.params.fromDate)} – ${formatDate(
+								result.params.toDate
+							)}`}
+						</p>
+						<p className={styles.meta}>
+							<span className={styles.metaLabel}>Fetched:</span>{' '}
+							{formatTimestamp(result.timestamp)}
 						</p>
 					</div>
 				)}

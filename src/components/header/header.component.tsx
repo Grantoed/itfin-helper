@@ -1,32 +1,38 @@
-import React from "react";
-import * as styles from "./header.module.scss";
+import React from 'react';
+import { ITFIN_ORIGIN } from '../../shared/constants';
+import * as styles from './header.module.scss';
 
 type Props = {
-  jwt: string;
+	isAuthed: boolean;
 };
 
-const Header = ({ jwt }: Props) => {
-  const isAuthed = Boolean(jwt);
-
-  return (
-    <header className={styles.header}>
-      <div className={styles.titleRow}>
-        <h3 className={styles.heading}>ITFin Helper</h3>
-        <span
-          className={`${styles.statusChip} ${
-            isAuthed ? styles.statusChipSuccess : styles.statusChipWarning
-          }`}
-        >
-          {isAuthed ? "Signed in" : "Not signed in"}
-        </span>
-      </div>
-      <p className={styles.subheading}>
-        {isAuthed
-          ? "You’re connected. Fetch data or adjust filters below."
-          : "Log in on ITFin in another tab, then return to fetch data."}
-      </p>
-    </header>
-  );
-};
+const Header = ({ isAuthed }: Props) => (
+	<header className={styles.header}>
+		<div className={styles.titleRow}>
+			<h1 className={styles.heading}>ITFin Helper</h1>
+			<span
+				className={`${styles.statusChip} ${
+					isAuthed ? styles.statusChipSuccess : styles.statusChipWarning
+				}`}
+			>
+				{isAuthed ? 'Signed in' : 'Not signed in'}
+			</span>
+		</div>
+		{!isAuthed && (
+			<p className={styles.subheading}>
+				Log in to{' '}
+				<a
+					className={styles.link}
+					href={ITFIN_ORIGIN}
+					target="_blank"
+					rel="noreferrer"
+				>
+					ITFin
+				</a>
+				, then reopen this popup.
+			</p>
+		)}
+	</header>
+);
 
 export default Header;

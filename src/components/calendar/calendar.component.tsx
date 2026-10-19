@@ -1,39 +1,45 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
+import { parseISODate, toISODate } from '../../utils/date.utils';
 import * as styles from './calendar.module.scss';
+
+type DateRange = [Date | null, Date | null];
 
 type Props = {
 	fromDate: string;
 	toDate: string;
-	setFromDate: React.Dispatch<React.SetStateAction<string>>;
-	setToDate: React.Dispatch<React.SetStateAction<string>>;
+	onChange: (fromDate: string, toDate: string) => void;
+	disabled?: boolean;
 };
 
-const Calendar = ({ fromDate, toDate, setFromDate, setToDate }: Props) => {
-	const [dates, setDates] = useState<[Date | null, Date | null]>([
-		fromDate ? new Date(fromDate) : null,
-		toDate ? new Date(toDate) : null,
-	]);
+const Calendar = ({ fromDate, toDate, onChange, disabled }: Props) => {
+	// Holds a half-picked range; the parent only sees complete ranges
+	const [draft, setDraft] = useState<DateRange | null>(null);
+	const [start, end] = draft ?? [parseISODate(fromDate), parseISODate(toDate)];
 
-	const handleDateChange = (date: [Date | null, Date | null]) => {
-		setDates(date);
-		if (date[0]) setFromDate(date[0].toISOString().split('T')[0]);
-		if (date[1]) setToDate(date[1].toISOString().split('T')[0]);
+	const handleChange = ([nextStart, nextEnd]: DateRange) => {
+		if (nextStart && nextEnd) {
+			setDraft(null);
+			onChange(toISODate(nextStart), toISODate(nextEnd));
+		} else {
+			setDraft([nextStart, nextEnd]);
+		}
 	};
 
 	return (
 		<DatePicker
 			className={styles.datePicker}
-			selected={dates[0]}
-			onChange={(update: [Date | null, Date | null]) =>
-				handleDateChange(update)
-			}
 			calendarClassName={styles.calendar}
+			selected={start}
+			startDate={start}
+			endDate={end}
+			onChange={handleChange}
+			// Abandon an unfinished selection instead of leaving half a range
+			onCalendarClose={() => setDraft(null)}
 			selectsRange
-			startDate={dates[0]}
-			endDate={dates[1]}
+			disabled={disabled}
 			dateFormat="dd/MM/yyyy"
-			placeholderText="Select Date Range"
+			placeholderText="Select date range"
 			calendarStartDay={1}
 		/>
 	);
