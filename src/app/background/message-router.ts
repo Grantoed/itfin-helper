@@ -1,4 +1,5 @@
 import type { TaskMessage, TaskMessageResponse } from '../../shared/tasks';
+import { clearFinishedBadges } from './badge';
 import { cancelTask, clearTask, startTask } from './task-runner';
 
 const handleMessage = async (message: TaskMessage) => {
@@ -10,8 +11,9 @@ const handleMessage = async (message: TaskMessage) => {
 		case 'CLEAR_TASK':
 			return clearTask(message.scope);
 		case 'PING':
-			// Waking the worker is enough: booting clears orphaned tasks
-			return;
+			// Sent when the popup opens. Waking the worker also lets it recover
+			// orphaned tasks on boot.
+			return clearFinishedBadges();
 		default:
 			throw new Error('Unknown message type');
 	}

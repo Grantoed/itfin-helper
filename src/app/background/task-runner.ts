@@ -1,5 +1,7 @@
-import { ApiError, getJwt } from '../../shared/api';
+import { ApiError, getJwt, isAuthError } from '../../shared/api';
+import { CACHE_KEYS } from '../../shared/constants';
 import {
+	INTERRUPTED_MESSAGE,
 	resultKey,
 	stateKey,
 	TASK_SCOPES,
@@ -9,6 +11,7 @@ import {
 	TaskScope,
 	TaskState,
 } from '../../shared/tasks';
+import { badgeTaskEnded, badgeTaskStarted } from './badge';
 import { fetchProjectIncome } from './tasks/project-income';
 import { fetchVacations } from './tasks/vacations';
 import { fetchWorkLogs } from './tasks/work-logs';
@@ -30,25 +33,50 @@ const handlers: { [S in TaskScope]: TaskHandler<S> } = {
 	vacations: fetchVacations,
 };
 
-const running = new Map<TaskScope, AbortController>();
+type RunningTask = { controller: AbortController; heartbeat: () => void };
+
+const running = new Map<TaskScope, RunningTask>();
 
 // Any task still marked as loading when the service worker boots was killed
-// together with the previous worker, so it can never finish. Clear it so the
-// popup doesn't show a spinner forever.
+// together with the previous worker, so it can never finish. Turn it into an
+// error so the popup says what happened instead of spinning forever.
 const ready = (async () => {
 	const keys = TASK_SCOPES.map(stateKey);
 	const states: Record<string, TaskState<TaskScope> | undefined> =
 		await chrome.storage.local.get(keys);
-	const orphaned = keys.filter(key => states[key]?.status === 'loading');
-	if (orphaned.length) await chrome.storage.local.remove(orphaned);
-})().catch(error => console.error('Failed to clear orphaned tasks:', error));
+	const interrupted: Record<string, TaskState<TaskScope>> = {};
+	for (const key of keys) {
+		const state = states[key];
+		if (state?.status === 'loading') {
+			interrupted[key] = {
+				...state,
+				status: 'error',
+				progress: undefined,
+				error: INTERRUPTED_MESSAGE,
+				timestamp: Date.now(),
+			};
+		}
+	}
+	if (Object.keys(interrupted).length) {
+		await chrome.storage.local.set(interrupted);
+	}
+})().catch(error =>
+	console.error('Failed to recover interrupted tasks:', error)
+);
 
 // MV3 service workers are stopped after ~30s without extension API activity,
-// and in-flight fetches alone don't count. Ping an API while tasks run.
+// and in-flight fetches alone don't count. ITFin can take minutes to answer,
+// so while tasks run, refresh each task's state every few seconds. The
+// storage write keeps the worker alive and tells the popup the task is still
+// alive (see STALE_TASK_MS).
+const HEARTBEAT_MS = 15_000;
 let keepAliveTimer: ReturnType<typeof setInterval> | undefined;
 const updateKeepAlive = () => {
 	if (running.size && !keepAliveTimer) {
-		keepAliveTimer = setInterval(() => chrome.runtime.getPlatformInfo(), 20_000);
+		keepAliveTimer = setInterval(
+			() => running.forEach(task => task.heartbeat()),
+			HEARTBEAT_MS
+		);
 	} else if (!running.size && keepAliveTimer) {
 		clearInterval(keepAliveTimer);
 		keepAliveTimer = undefined;
@@ -70,13 +98,14 @@ export async function startTask<S extends TaskScope>(
 	if (running.has(scope)) return;
 
 	const controller = new AbortController();
-	running.set(scope, controller);
-	updateKeepAlive();
+	const startedAt = Date.now();
+	let lastProgress = 'Starting…';
 
-	let lastProgress = '';
-	const writeState = (state: Omit<TaskState<S>, 'params' | 'timestamp'>) =>
+	const writeState = (
+		state: Omit<TaskState<S>, 'params' | 'timestamp' | 'startedAt'>
+	) =>
 		chrome.storage.local.set({
-			[stateKey(scope)]: { ...state, params, timestamp: Date.now() },
+			[stateKey(scope)]: { ...state, params, startedAt, timestamp: Date.now() },
 		});
 
 	const report = (progress: string) => {
@@ -85,9 +114,20 @@ export async function startTask<S extends TaskScope>(
 		writeState({ status: 'loading', progress });
 	};
 
-	await writeState({ status: 'loading', progress: 'Starting...' });
+	const heartbeat = () => {
+		if (!controller.signal.aborted) {
+			writeState({ status: 'loading', progress: lastProgress });
+		}
+	};
+
+	running.set(scope, { controller, heartbeat });
+	updateKeepAlive();
+	void badgeTaskStarted(scope, running.size);
+
+	await writeState({ status: 'loading', progress: lastProgress });
 
 	void (async () => {
+		let outcome: 'done' | 'error' | null = null;
 		try {
 			const jwt = await getJwt();
 			if (!jwt) {
@@ -105,26 +145,36 @@ export async function startTask<S extends TaskScope>(
 			if (controller.signal.aborted) return;
 
 			const result: TaskResult<S> = { params, data, timestamp: Date.now() };
-			await chrome.storage.local.set({ [resultKey(scope)]: result });
+			await chrome.storage.local.set({
+				[resultKey(scope)]: result,
+				[CACHE_KEYS.SESSION_EXPIRED]: false,
+			});
 			await chrome.storage.local.remove(stateKey(scope));
+			outcome = 'done';
 		} catch (error) {
 			if (controller.signal.aborted) return;
 			console.error(`Task ${scope} failed:`, error);
 			// Stop any requests still in flight for this task
 			controller.abort();
 			await writeState({ status: 'error', error: errorMessage(error) });
+			if (isAuthError(error)) {
+				await chrome.storage.local.set({ [CACHE_KEYS.SESSION_EXPIRED]: true });
+			}
+			outcome = 'error';
 		} finally {
-			if (running.get(scope) === controller) running.delete(scope);
+			if (running.get(scope)?.controller === controller) running.delete(scope);
 			updateKeepAlive();
+			void badgeTaskEnded(scope, running.size, outcome);
 		}
 	})();
 }
 
 export async function cancelTask(scope: TaskScope) {
 	await ready;
-	running.get(scope)?.abort();
+	running.get(scope)?.controller.abort();
 	running.delete(scope);
 	updateKeepAlive();
+	void badgeTaskEnded(scope, running.size, null);
 	await chrome.storage.local.remove(stateKey(scope));
 }
 

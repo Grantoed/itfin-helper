@@ -12,9 +12,20 @@ const VacationEvent = ({ event }: Props) => {
 
 	return (
 		<div className={styles.employeeCard}>
-			<h3>
-				{event.FirstName} {event.LastName} <span>({event.EventType})</span>
-			</h3>
+			<div className={styles.nameRow}>
+				<h3>
+					{event.FirstName} {event.LastName}
+				</h3>
+				<span
+					className={
+						event.EventType === 'Vacation'
+							? styles.vacationPill
+							: styles.unpaidPill
+					}
+				>
+					{event.EventType}
+				</span>
+			</div>
 			<div className={styles.vacationInfo}>
 				<span>{formatDateRange(event.StartDate, event.EndDate)}</span>
 				<span className={styles.duration}>

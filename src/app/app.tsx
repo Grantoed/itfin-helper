@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import Popup from './popup/popup';
 import { getJwt } from '../shared/api';
 import { initStore } from '../utils/store.util';
+import { applySavedTheme } from '../utils/theme.util';
 import '../styles/globals.scss';
 
 const boot = async () => {
@@ -26,6 +27,9 @@ const boot = async () => {
 			console.error('Failed to load storage:', error)
 		),
 	]);
+
+	// Before the first render, so the popup never flashes the other theme
+	applySavedTheme();
 
 	createRoot(rootElement).render(
 		<React.StrictMode>

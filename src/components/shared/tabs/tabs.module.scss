@@ -1,0 +1,67 @@
+// ITFin .itf-segmeneted-control (night theme)
+.tabs {
+	display: grid;
+	grid-auto-columns: 1fr;
+	grid-auto-flow: column;
+	padding: 2px;
+	border-radius: var(--radius);
+	background-color: var(--segment-bg);
+}
+
+.tab {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	height: 32px;
+	padding: 4px 8px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-color);
+	font-family: inherit;
+	font-size: 15px;
+	cursor: pointer;
+	transition: background-color var(--transition);
+
+	&:hover {
+		background-color: var(--segment-hover-bg);
+	}
+
+	&:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 0.125rem var(--primary-ring);
+	}
+}
+
+.selected {
+	composes: tab;
+	background-color: var(--segment-selected-bg);
+	box-shadow: var(--segment-selected-shadow);
+
+	&:hover {
+		background-color: var(--segment-selected-bg);
+	}
+}
+
+.loadingDot,
+.errorDot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+}
+
+.loadingDot {
+	background-color: var(--primary);
+	animation: pulse 1.2s ease-in-out infinite;
+}
+
+.errorDot {
+	background-color: var(--danger);
+}
+
+@keyframes pulse {
+	50% {
+		opacity: 0.3;
+	}
+}

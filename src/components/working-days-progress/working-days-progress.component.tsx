@@ -1,10 +1,17 @@
 import React from 'react';
-import { countWorkingDays, formatShortDate } from '../../utils/date.utils';
+import { formatShortDate, WorkingDays } from '../../utils/date.utils';
 import * as styles from './working-days-progress.module.scss';
 
-const WorkingDaysProgress = () => {
-	const { passed, total, until } = countWorkingDays();
-	const percent = Math.round((passed / total) * 100);
+type Props = {
+	workingDays: WorkingDays;
+	holidayCount: number;
+};
+
+const WorkingDaysProgress = ({
+	workingDays: { passed, total, until },
+	holidayCount,
+}: Props) => {
+	const percent = total > 0 ? Math.round((passed / total) * 100) : 0;
 
 	return (
 		<section className={styles.wrapper}>
@@ -13,6 +20,13 @@ const WorkingDaysProgress = () => {
 				<span className={styles.daysProgress}>
 					{` ${passed}/${total} (${percent}%)`}
 				</span>
+				{holidayCount > 0 && (
+					<span className={styles.holidayNote}>
+						{` excl. ${holidayCount} public holiday${
+							holidayCount > 1 ? 's' : ''
+						}`}
+					</span>
+				)}
 			</p>
 		</section>
 	);

@@ -14,9 +14,6 @@ type WorkLogControlsProps = {
 	loading: boolean;
 	hideFreelancers: boolean;
 	setHideFreelancers: (value: boolean) => void;
-	showMarkdown: boolean;
-	setShowMarkdown: (value: boolean) => void;
-	markdownToggleDisabled: boolean;
 };
 
 const WorkLogControls = ({
@@ -30,9 +27,6 @@ const WorkLogControls = ({
 	loading,
 	hideFreelancers,
 	setHideFreelancers,
-	showMarkdown,
-	setShowMarkdown,
-	markdownToggleDisabled,
 }: WorkLogControlsProps) => {
 	// A saved team may have disappeared from the list; keep it selectable
 	const options = teamOptions.some(option => option.value === selectedTeam)
@@ -56,7 +50,7 @@ const WorkLogControls = ({
 						value={selectedTeam}
 						onChange={setSelectedTeam}
 						disabled={loading || loadingTeams}
-						placeholder={loadingTeams ? 'Loading teams...' : 'Select a team'}
+						placeholder={loadingTeams ? 'Loading teams…' : 'Select a team'}
 					/>
 				</div>
 				<div className={styles.checkboxesRow}>
@@ -68,16 +62,6 @@ const WorkLogControls = ({
 							onChange={e => setHideFreelancers(e.target.checked)}
 						/>
 						<label htmlFor="hide-freelancers">Hide freelancers</label>
-					</div>
-					<div className={styles.checkboxContainer}>
-						<input
-							type="checkbox"
-							id="markdown-toggle"
-							checked={showMarkdown}
-							onChange={e => setShowMarkdown(e.target.checked)}
-							disabled={markdownToggleDisabled}
-						/>
-						<label htmlFor="markdown-toggle">Show markdown view</label>
 					</div>
 				</div>
 			</div>

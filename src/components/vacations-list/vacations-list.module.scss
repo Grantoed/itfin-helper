@@ -1,158 +1,130 @@
 .wrapper {
 	display: flex;
-	align-items: stretch;
-	justify-content: center;
 	flex-direction: column;
-	gap: 16px;
+	gap: 14px;
 	width: 100%;
 }
 
-.filterContainer {
-	display: flex;
-	gap: 1rem;
-	align-items: center;
+// ITFin .itf-segmeneted-control
+.segmented {
+	display: grid;
+	grid-auto-columns: 1fr;
+	grid-auto-flow: column;
+	padding: 2px;
+	border-radius: var(--radius);
+	background-color: var(--segment-bg);
 }
 
-.filterRow {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	flex-wrap: wrap;
-}
-
-.toggleContainer {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 14px;
-
-	input {
-		cursor: pointer;
-	}
-
-	label {
-		cursor: pointer;
-		font-weight: 500;
-		color: var(--text-color);
-	}
-}
-
-.radioLabel {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	font-size: 1rem;
-	cursor: pointer;
-}
-
-.radioInput {
-	appearance: none;
-	width: 16px;
-	height: 16px;
-	border: 2px solid var(--accent-color);
-	border-radius: 50%;
+.segment {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	height: 30px;
+	border-radius: var(--radius-sm);
+	font-size: 14px;
 	cursor: pointer;
-	position: relative;
+	transition: background-color var(--transition);
 
-	&:checked::before {
-		content: '';
-		width: 8px;
-		height: 8px;
-		background-color: var(--accent-color);
-		border-radius: 50%;
-		position: absolute;
+	&:hover {
+		background-color: var(--segment-hover-bg);
 	}
 
-	&:focus {
-		outline: none;
-		box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+	&:focus-within {
+		box-shadow: 0 0 0 0.125rem var(--primary-ring);
 	}
 }
 
-.error {
-	color: var(--error-color);
-	margin-bottom: 16px;
-}
+.segmentSelected {
+	composes: segment;
+	background-color: var(--segment-selected-bg);
+	box-shadow: var(--segment-selected-shadow);
 
-.noData {
-	color: #718096;
-	text-align: center;
-	padding: 24px;
-	background-color: #f7fafc;
-	border-radius: 4px;
-	margin-bottom: 16px;
+	&:hover {
+		background-color: var(--segment-selected-bg);
+	}
 }
 
 .resultContainer {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 8px;
 }
 
-
-
-
-
-
 .employeeCard {
-	background-color: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 12px 14px;
+	border-radius: var(--radius);
+	background-color: var(--inset-bg);
 
 	h3 {
-		margin-top: 0;
-		padding-bottom: 0.75rem;
-		color: var(--bg-color);
-		border-bottom: 1px solid #e0e0e0;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		span {
-			font-size: 0.9rem;
-			color: var(--success-color);
-			font-weight: 600;
-			text-align: center;
-			width: 50%;
-		}
+		font-size: 15px;
+		font-weight: 500;
 	}
+}
+
+.nameRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+// Pills echo ITFin's calendar colours for time off
+.vacationPill,
+.unpaidPill {
+	flex-shrink: 0;
+	padding: 2px 8px;
+	border-radius: var(--radius-pill);
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--white);
+}
+
+.vacationPill {
+	background-color: var(--vacation-bg);
+	color: var(--vacation-color);
+}
+
+.unpaidPill {
+	background-color: var(--neutral-badge-bg);
 }
 
 .vacationInfo {
 	display: flex;
 	justify-content: space-between;
-	color: #4a5568;
 	font-size: 14px;
-	margin-top: 8px;
+	color: var(--text-muted);
 }
 
 .duration {
+	color: var(--text-color);
 	font-weight: 500;
-	color: #2d3748;
 }
 
-.daysList {
-	list-style: none;
-	padding: 0;
-	margin: 8px 0 0;
-}
-
-.daysList li {
+.holidayCard {
 	display: flex;
 	justify-content: space-between;
-	padding: 4px 0;
-	border-bottom: 1px solid #f7fafc;
-}
-
-.date {
-	color: #718096;
-}
-
-.time {
+	gap: 12px;
+	padding: 10px 14px;
+	border: 1px solid var(--primary);
+	border-radius: var(--radius);
+	color: var(--primary);
+	font-size: 14px;
 	font-weight: 500;
+}
+
+.holidayDate {
+	color: var(--text-muted);
+	font-weight: 400;
+}
+
+.noData {
+	padding: 16px;
+	border-radius: var(--radius);
+	background-color: var(--inset-bg);
+	color: var(--text-muted);
+	text-align: center;
+	font-size: 14px;
 }

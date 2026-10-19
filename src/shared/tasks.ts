@@ -28,11 +28,15 @@ export type WorkLogEmployee = {
 	FirstName: string;
 	LastName: string;
 	isFreelancer: boolean;
+	// Expected minutes per working day (from the employee's BusinessHours)
+	dailyMinutes: number;
+	// Only days within the employee's employment period
 	days: WorkLogDay[];
 };
 
 export type Vacation = {
 	RefId: number;
+	EmployeeId: number;
 	EventType: 'Vacation' | 'Unpaid';
 	StartDate: string;
 	EndDate: string;
@@ -40,10 +44,16 @@ export type Vacation = {
 	LastName: string;
 };
 
+export type Holiday = { Date: string; Name: string };
+
 export interface TaskDataMap {
 	projectIncome: { income: number; projectCount: number };
 	workLogs: { employees: WorkLogEmployee[] };
-	vacations: { vacations: Vacation[] };
+	vacations: {
+		vacations: Vacation[];
+		// Missing in results cached by older versions
+		holidays?: Holiday[];
+	};
 }
 
 export type TaskResult<S extends TaskScope> = {
@@ -57,13 +67,22 @@ export type TaskState<S extends TaskScope> = {
 	params: TaskParamsMap[S];
 	progress?: string;
 	error?: string;
+	startedAt: number;
+	// Refreshed by a heartbeat while the task runs
 	timestamp: number;
 };
+
+export const INTERRUPTED_MESSAGE =
+	'Interrupted: Chrome stopped the background worker before ITFin answered. Try again.';
 
 export const resultKey = (scope: TaskScope) => `result:${scope}`;
 export const stateKey = (scope: TaskScope) => `task:${scope}`;
 
-export const TASK_SCOPES: TaskScope[] = ['projectIncome', 'workLogs', 'vacations'];
+export const TASK_SCOPES: TaskScope[] = [
+	'projectIncome',
+	'workLogs',
+	'vacations',
+];
 
 export type TaskMessage =
 	| { type: 'START_TASK'; scope: TaskScope; params: TaskParamsMap[TaskScope] }

@@ -12,12 +12,14 @@ const day = (Date: string, MinutesInt: number, extra = {}) => ({
 const employee = (
 	Id: number,
 	days: WorkLogEmployee['days'],
-	isFreelancer = false
+	isFreelancer = false,
+	dailyMinutes = 480
 ): WorkLogEmployee => ({
 	Id,
 	FirstName: `First${Id}`,
 	LastName: `Last${Id}`,
 	isFreelancer,
+	dailyMinutes,
 	days,
 });
 
@@ -41,6 +43,29 @@ describe('summarizeWorkLogs', () => {
 			[2, 240],
 		]);
 		expect(result[1].underworkedDays.map(d => d.Date)).toEqual(['2026-10-01']);
+	});
+
+	it("uses each employee's own working hours", () => {
+		const partTime = employee(
+			6,
+			[day('2026-10-01', 240), day('2026-10-02', 200)],
+			false,
+			240
+		);
+		expect(summarizeWorkLogs([partTime], false)).toEqual([
+			expect.objectContaining({
+				deficit: 40,
+				underworkedDays: [partTime.days[1]],
+			}),
+		]);
+	});
+
+	it('falls back to 8h for results cached without dailyMinutes', () => {
+		const legacy = {
+			...employee(7, [day('2026-10-01', 300)]),
+			dailyMinutes: undefined,
+		} as unknown as WorkLogEmployee;
+		expect(summarizeWorkLogs([legacy], false)[0].deficit).toBe(180);
 	});
 
 	it('can hide freelancers', () => {

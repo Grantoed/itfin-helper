@@ -1,9 +1,11 @@
 import {
+	addDays,
 	countDays,
 	countWorkingDays,
 	formatDateRange,
 	getFirstDayOfMonth,
 	getLastFriday,
+	getLastWeekendEnd,
 	getMonthsInRange,
 	parseISODate,
 	toISODate,
@@ -11,7 +13,12 @@ import {
 
 // Run every assertion in timezones on both sides of UTC: day-shift bugs from
 // mixing UTC and local dates only show up away from UTC.
-const TIMEZONES = ['UTC', 'Europe/Kyiv', 'Pacific/Kiritimati', 'America/Los_Angeles'];
+const TIMEZONES = [
+	'UTC',
+	'Europe/Kyiv',
+	'Pacific/Kiritimati',
+	'America/Los_Angeles',
+];
 
 describe.each(TIMEZONES)('date utils in %s', timezone => {
 	const originalTz = process.env.TZ;
@@ -49,6 +56,18 @@ describe.each(TIMEZONES)('date utils in %s', timezone => {
 		expect(getLastFriday(at(today, 23, 30))).toBe(expected);
 	});
 
+	it.each([
+		['2026-10-20', '2026-10-18'], // Tuesday: through Sunday
+		['2026-10-19', '2026-10-18'], // Monday
+		['2026-10-18', '2026-10-18'], // Sunday itself
+		['2026-10-17', '2026-10-17'], // Saturday: no later than today
+		['2026-10-16', '2026-10-16'], // Friday: today
+		['2026-10-01', '2026-10-01'], // last Friday was last month
+	])('last weekend for %s ends %s', (today, expected) => {
+		expect(getLastWeekendEnd(at(today, 0, 30))).toBe(expected);
+		expect(getLastWeekendEnd(at(today, 23, 30))).toBe(expected);
+	});
+
 	it('counts working days up to last Friday', () => {
 		// October 2026 has 22 weekdays; Oct 1-16 contains 12
 		expect(countWorkingDays(at('2026-10-19'))).toEqual({
@@ -56,6 +75,19 @@ describe.each(TIMEZONES)('date utils in %s', timezone => {
 			total: 22,
 			until: '2026-10-16',
 		});
+	});
+
+	it('skips public holidays in working days', () => {
+		// Oct 14 is a Wednesday before last Friday; Oct 26 a Monday after it
+		expect(
+			countWorkingDays(at('2026-10-19'), ['2026-10-14', '2026-10-26'])
+		).toEqual({ passed: 11, total: 20, until: '2026-10-16' });
+	});
+
+	it('adds days across month and year ends', () => {
+		expect(addDays('2026-10-19', 27)).toBe('2026-11-15');
+		expect(addDays('2026-12-30', 3)).toBe('2027-01-02');
+		expect(addDays('2026-03-01', -1)).toBe('2026-02-28');
 	});
 
 	it('lists every month touched by a range', () => {

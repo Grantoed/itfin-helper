@@ -8,15 +8,22 @@ type Props = {
 	disabled?: boolean;
 };
 
+// Same labels as ITFin's calendar switch
 const OPTIONS: { value: FilterType; label: string }[] = [
-	{ value: 'company', label: 'Company' },
-	{ value: 'team', label: 'Team' },
+	{ value: 'company', label: 'The Company' },
+	{ value: 'team', label: 'My Team' },
 ];
 
+// Radio group drawn as ITFin's segmented control
 const VacationFilter = ({ filterType, setFilterType, disabled }: Props) => (
-	<div className={styles.filterContainer} role="radiogroup" aria-label="Scope">
+	<div className={styles.segmented} role="radiogroup" aria-label="Scope">
 		{OPTIONS.map(({ value, label }) => (
-			<label key={value} className={styles.radioLabel}>
+			<label
+				key={value}
+				className={
+					filterType === value ? styles.segmentSelected : styles.segment
+				}
+			>
 				<input
 					type="radio"
 					name="vacation-filter"
@@ -24,7 +31,7 @@ const VacationFilter = ({ filterType, setFilterType, disabled }: Props) => (
 					checked={filterType === value}
 					onChange={() => setFilterType(value)}
 					disabled={disabled}
-					className={styles.radioInput}
+					className="visually-hidden"
 				/>
 				{label}
 			</label>

@@ -1,59 +1,59 @@
+// ITFin .itf-button.btn-primary / .btn-secondary (night theme)
 .btn {
 	cursor: pointer;
-	padding: 10px 14px;
-	min-width: 120px;
-	border-radius: 10px;
-	border: 1px solid transparent;
+	padding: 6px 12px;
+	min-width: 110px;
+	min-height: 38px;
+	border-radius: var(--radius);
+	border: 2px solid transparent;
 	font-size: 15px;
+	font-weight: 400;
 	font-family: inherit;
-	transition: all var(--transition);
-	color: var(--text-color);
+	transition: background-color var(--transition), border-color var(--transition);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
-	font-weight: 600;
-
-	&:hover,
-	&:focus,
-	&:active {
-		transform: translateY(-1px);
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-	}
 
 	&:focus-visible {
-		outline: 2px solid var(--accent-color);
-		outline-offset: 2px;
+		outline: none;
+		box-shadow: 0 0 0 0.125rem var(--primary-ring);
 	}
 
 	&:disabled {
 		opacity: 0.55;
 		cursor: not-allowed;
-		box-shadow: none;
-		transform: none;
 	}
 }
 
 .primary {
-	background: linear-gradient(135deg, var(--accent-color), #ffd633);
-	color: var(--bg-color);
-	border-color: var(--accent-color);
+	background-color: var(--primary);
+	border-color: var(--primary);
+	color: var(--on-primary);
 
-	&:hover,
-	&:focus,
-	&:active {
-		background: linear-gradient(135deg, #ffd633, var(--accent-color));
+	&:hover:not(:disabled) {
+		background-color: var(--primary-hover);
+		border-color: var(--primary-hover);
+	}
+
+	&:active:not(:disabled) {
+		background-color: var(--primary-active);
+		border-color: var(--primary-active);
 	}
 }
 
 .secondary {
-	background: transparent;
-	color: var(--text-color);
-	border-color: var(--btn-hover-color);
+	background-color: var(--secondary);
+	border-color: var(--secondary);
+	color: var(--on-secondary);
 
-	&:hover,
-	&:focus,
-	&:active {
-		background: var(--hover-color);
+	&:hover:not(:disabled) {
+		background-color: var(--secondary-hover);
+		border-color: var(--secondary-hover);
+	}
+
+	&:active:not(:disabled) {
+		background-color: var(--secondary-active);
+		border-color: var(--secondary-active);
 	}
 }

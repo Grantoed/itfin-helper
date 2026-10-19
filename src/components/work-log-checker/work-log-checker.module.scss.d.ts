@@ -10,7 +10,6 @@ export declare const employeeBadge: string;
 export declare const employeeCard: string;
 export declare const employeeMetadataWrapper: string;
 export declare const employeeNameRoleWrapper: string;
-export declare const error: string;
 export declare const freelancerBadge: string;
 export declare const noData: string;
 export declare const resultContainer: string;

@@ -1,9 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import Container from '../shared/container/container.component';
-import Heading from '../shared/heading/heading.component';
-import MarkdownView from '../shared/markdown-view/markdown-view.component';
-import { TaskActions, TaskStatus } from '../shared/task-status/task-status.component';
+import ResultsHeader from '../shared/copy-button/results-header.component';
+import MarkdownText from '../shared/copy-button/markdown-text.component';
+import {
+	TaskActions,
+	TaskStatus,
+} from '../shared/task-status/task-status.component';
 import useWorkLogChecker from '../../hooks/use-work-log-checker.hook';
+import { PREF_KEYS } from '../../shared/constants';
+import { usePersistentState } from '../../utils/store.util';
 import { formatTime } from '../../utils/work-log.utils';
 import * as styles from './work-log-checker.module.scss';
 import WorkLogControls from './components/work-log-controls.component';
@@ -19,6 +24,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 		setParams,
 		loading,
 		progress,
+		startedAt,
 		error,
 		result,
 		start,
@@ -31,16 +37,19 @@ const WorkLogChecker = ({ jwt }: Props) => {
 		setHideFreelancers,
 		summaries,
 	} = useWorkLogChecker(jwt);
-	const [showMarkdown, setShowMarkdown] = useState(false);
+	const [showMarkdown, setShowMarkdown] = usePersistentState(
+		PREF_KEYS.MARKDOWN_WORK_LOGS,
+		false
+	);
 
 	const markdownText = useMemo(
 		() =>
 			(summaries ?? [])
 				.map(
 					({ employee, deficit }) =>
-						`- ${employee.FirstName} ${employee.LastName} — Underworked ${formatTime(
-							deficit
-						)}`
+						`- ${employee.FirstName} ${
+							employee.LastName
+						} — Underworked ${formatTime(deficit)}`
 				)
 				.join('\n'),
 		[summaries]
@@ -50,7 +59,6 @@ const WorkLogChecker = ({ jwt }: Props) => {
 
 	return (
 		<Container>
-			<Heading>Work Log Checker</Heading>
 			<div className={styles.wrapper}>
 				<WorkLogControls
 					fromDate={params.fromDate}
@@ -65,9 +73,6 @@ const WorkLogChecker = ({ jwt }: Props) => {
 					loading={loading}
 					hideFreelancers={hideFreelancers}
 					setHideFreelancers={setHideFreelancers}
-					showMarkdown={showMarkdown}
-					setShowMarkdown={setShowMarkdown}
-					markdownToggleDisabled={!hasSummaries}
 				/>
 				<TaskActions
 					fetchLabel="Fetch work logs"
@@ -81,6 +86,7 @@ const WorkLogChecker = ({ jwt }: Props) => {
 				<TaskStatus
 					progress={progress}
 					error={error}
+					startedAt={startedAt}
 					fetchedAt={result?.timestamp}
 				/>
 			</div>
@@ -93,12 +99,27 @@ const WorkLogChecker = ({ jwt }: Props) => {
 				</p>
 			)}
 
-			{hasSummaries &&
-				(showMarkdown ? (
-					<MarkdownView text={markdownText} />
-				) : (
-					<ResultsList summaries={summaries!} />
-				))}
+			{hasSummaries && !loading && (
+				<>
+					<ResultsHeader
+						copyText={markdownText}
+						markdown={{
+							shown: showMarkdown,
+							onToggle: () => setShowMarkdown(!showMarkdown),
+						}}
+					>
+						Didn't log full time ({summaries!.length})
+					</ResultsHeader>
+					{showMarkdown ? (
+						<MarkdownText
+							text={markdownText}
+							label="Work log gaps as markdown"
+						/>
+					) : (
+						<ResultsList summaries={summaries!} />
+					)}
+				</>
+			)}
 		</Container>
 	);
 };

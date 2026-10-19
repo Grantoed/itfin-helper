@@ -33,6 +33,12 @@ export const getFirstDayOfMonth = (now = new Date()): string =>
 
 export const getToday = (now = new Date()): string => toISODate(now);
 
+export const addDays = (date: string, days: number): string => {
+	const shifted = parseISODate(date);
+	shifted.setDate(shifted.getDate() + days);
+	return toISODate(shifted);
+};
+
 // Most recent Friday (today if it is Friday). Falls back to today when that
 // Friday belongs to the previous month.
 export const getLastFriday = (now = new Date()): string => {
@@ -47,29 +53,49 @@ export const getLastFriday = (now = new Date()): string => {
 		: toISODate(now);
 };
 
+// The Sunday after last Friday, so the range includes that weekend; never
+// later than today.
+export const getLastWeekendEnd = (now = new Date()): string => {
+	const sunday = addDays(getLastFriday(now), 2);
+	const today = getToday(now);
+	return sunday < today ? sunday : today;
+};
+
+export type WorkingDays = { passed: number; total: number; until: string };
+
+// Working days in the current month, and how many of them passed up to last
+// Friday. Weekends and the given public holidays ('YYYY-MM-DD') don't count.
 export const countWorkingDays = (
-	now = new Date()
-): { passed: number; total: number; until: string } => {
+	now = new Date(),
+	holidays: string[] = []
+): WorkingDays => {
 	const until = getLastFriday(now);
-	const untilDay = parseISODate(until).getDate();
 	const year = now.getFullYear();
 	const month = now.getMonth();
 	const daysInMonth = new Date(year, month + 1, 0).getDate();
+	const holidaySet = new Set(holidays);
 
 	let total = 0;
 	let passed = 0;
 	for (let day = 1; day <= daysInMonth; day++) {
-		const weekday = new Date(year, month, day).getDay();
-		if (weekday === 0 || weekday === 6) continue;
+		const date = new Date(year, month, day);
+		const weekday = date.getDay();
+		const iso = toISODate(date);
+		if (weekday === 0 || weekday === 6 || holidaySet.has(iso)) continue;
 		total++;
-		if (day <= untilDay) passed++;
+		if (iso <= until) passed++;
 	}
 
 	return { passed, total, until };
 };
 
+export const getMonthKey = (date: string) => date.slice(0, 7);
+
 // 'YYYY-MM-01' for every month touched by the range
-export const getMonthsInRange = (fromDate: string, toDate: string): string[] => {
+export const getMonthsInRange = (
+	fromDate: string,
+	toDate: string
+): string[] => {
 	const end = parseISODate(toDate);
 	const cursor = parseISODate(fromDate);
 	cursor.setDate(1);

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { STALE_TASK_MS } from '../shared/constants';
 import {
+	INTERRUPTED_MESSAGE,
 	paramsEqual,
 	resultKey,
 	stateKey,
@@ -32,6 +33,14 @@ const restoreParams = <S extends TaskScope>(
 	return undefined;
 };
 
+// Whether a task is fetching or its last fetch failed, for tab indicators
+export function useTaskStatus(scope: TaskScope): 'loading' | 'error' | null {
+	const state = useStorageValue<TaskState<TaskScope>>(stateKey(scope));
+	if (!state) return null;
+	if (state.status === 'error') return 'error';
+	return Date.now() - state.timestamp < STALE_TASK_MS ? 'loading' : 'error';
+}
+
 // Drives one background task: owns its input params and exposes the task's
 // live state from storage.
 export function useTask<S extends TaskScope>(
@@ -47,17 +56,36 @@ export function useTask<S extends TaskScope>(
 	const state = useStorageValue<TaskState<S>>(stateKey(scope));
 	const storedResult = useStorageValue<TaskResult<S>>(resultKey(scope));
 
-	const isRunning =
+	// A loading task whose heartbeat stopped died with the background worker
+	// (normally the worker reports this itself when it restarts)
+	const isStale =
 		state?.status === 'loading' &&
-		Date.now() - state.timestamp < STALE_TASK_MS;
+		Date.now() - state.timestamp >= STALE_TASK_MS;
+	const isRunning = state?.status === 'loading' && !isStale;
+
+	// Re-render once the heartbeat would be overdue, so a worker that dies
+	// while the popup is open shows up as interrupted
+	const [, recheck] = useReducer((count: number) => count + 1, 0);
+	const heartbeatAt = isRunning ? state.timestamp : undefined;
+	useEffect(() => {
+		if (heartbeatAt === undefined) return;
+		const timer = setTimeout(
+			recheck,
+			heartbeatAt + STALE_TASK_MS - Date.now() + 100
+		);
+		return () => clearTimeout(timer);
+	}, [heartbeatAt]);
 	const loading = pending || isRunning;
 	const matchesInputs = (other?: { params: TaskParamsMap[S] }) =>
 		paramsEqual(other?.params, params);
 
 	const result = matchesInputs(storedResult) ? storedResult : undefined;
+	const stateError = isStale ? INTERRUPTED_MESSAGE : state?.error;
 	const error =
 		sendError ??
-		(state?.status === 'error' && matchesInputs(state) ? state.error : null);
+		((state?.status === 'error' || isStale) && matchesInputs(state)
+			? stateError ?? null
+			: null);
 
 	const send = async (message: TaskMessage) => {
 		setSendError(null);
@@ -68,7 +96,9 @@ export function useTask<S extends TaskScope>(
 			}
 		} catch (err) {
 			console.error(`Failed to send ${message.type}:`, err);
-			setSendError('Could not reach the extension. Reopen the popup and try again.');
+			setSendError(
+				'Could not reach the extension. Reopen the popup and try again.'
+			);
 		}
 	};
 
@@ -83,7 +113,8 @@ export function useTask<S extends TaskScope>(
 		params,
 		setParams,
 		loading,
-		progress: loading ? state?.progress ?? 'Starting...' : null,
+		progress: loading ? state?.progress ?? 'Starting…' : null,
+		startedAt: isRunning ? state.startedAt : undefined,
 		error,
 		result,
 		start,

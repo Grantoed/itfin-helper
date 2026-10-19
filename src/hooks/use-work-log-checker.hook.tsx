@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { DEFAULT_TEAM, PREF_KEYS } from '../shared/constants';
-import { getFirstDayOfMonth, getToday } from '../utils/date.utils';
+import { getFirstDayOfMonth, getLastFriday } from '../utils/date.utils';
 import {
 	getStorageValue,
 	setStorageValue,
@@ -13,7 +13,8 @@ import useTeams, { TeamOption } from './use-teams.hook';
 const useWorkLogChecker = (jwt: string) => {
 	const task = useTask('workLogs', () => ({
 		fromDate: getFirstDayOfMonth(),
-		toDate: getToday(),
+		// Up to last Friday: the weekly meeting reviews previous weeks
+		toDate: getLastFriday(),
 		teamId: getStorageValue<string>(PREF_KEYS.TEAM_ID) ?? DEFAULT_TEAM.id,
 	}));
 	const [hideFreelancers, setHideFreelancers] = usePersistentState(

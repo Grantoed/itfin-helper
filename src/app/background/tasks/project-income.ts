@@ -3,8 +3,11 @@ import type { ITFinResponse } from '../../../services/projects-summary/types';
 import type { TaskDataMap, TaskParamsMap } from '../../../shared/tasks';
 import type { TaskContext } from '../task-runner';
 
-const FALLBACK_PAGE_SIZE = 25;
-const MAX_PARALLEL_PAGES = 6;
+// ITFin rebuilds the whole report for every page request (~1-2.5 min each),
+// so ask for everything at once. `size` is the page-size param ITFin's own
+// UI uses elsewhere; projects-summary honours it.
+const PAGE_SIZE = 1000;
+const MAX_PARALLEL_PAGES = 2;
 
 export async function fetchProjectIncome(
 	{ fromDate, toDate }: TaskParamsMap['projectIncome'],
@@ -13,47 +16,40 @@ export async function fetchProjectIncome(
 	const query = `filter[from]=${encodeURIComponent(
 		fromDate
 	)}&filter[to]=${encodeURIComponent(toDate)}`;
-	const fetchPage = (page: number) =>
+	const fetchPage = (page: number, size: number) =>
 		apiGet<ITFinResponse>(
-			`/tracking/projects-summary?page=${page}&${query}`,
+			`/tracking/projects-summary?page=${page}&size=${size}&${query}`,
 			jwt,
 			signal
 		);
 
-	report('Fetching the first page...');
+	report('Waiting for ITFin to build the report (usually 1–3 min)…');
+	const first = await fetchPage(1, PAGE_SIZE);
+	const responses = [first];
 
-	// Request page 2 speculatively so most ranges need only one round trip
-	// before the remaining pages fan out.
-	const firstPage = fetchPage(1);
-	const secondPage = fetchPage(2);
-	secondPage.catch(() => undefined); // awaited below only if it's needed
-
-	const first = await firstPage;
-	const pageSize = first.Projects?.length || FALLBACK_PAGE_SIZE;
-	const totalPages = Math.max(1, Math.ceil((first.Count || 0) / pageSize));
-
-	let fetched = 1;
-	const onPage = (response: ITFinResponse) => {
-		fetched++;
-		report(`Fetched ${fetched} of ${totalPages} pages...`);
-		return response;
-	};
-	report(`Fetched 1 of ${totalPages} pages...`);
-
-	const remainingPages = Array.from(
-		{ length: Math.max(0, totalPages - 2) },
-		(_, i) => i + 3
-	);
-	const [second, rest] = await Promise.all([
-		totalPages >= 2 ? secondPage.then(onPage) : null,
-		mapWithConcurrency(remainingPages, MAX_PARALLEL_PAGES, page =>
-			fetchPage(page).then(onPage)
-		),
-	]);
+	// Fallback in case the server caps the page size: fetch the rest using
+	// whatever page size it actually returned.
+	const pageSize = first.Projects?.length || 0;
+	const totalPages =
+		pageSize > 0 ? Math.ceil((first.Count || 0) / pageSize) : 1;
+	if (totalPages > 1) {
+		let fetched = 1;
+		report(`Fetched 1 of ${totalPages} pages…`);
+		const rest = await mapWithConcurrency(
+			Array.from({ length: totalPages - 1 }, (_, i) => i + 2),
+			MAX_PARALLEL_PAGES,
+			async page => {
+				const response = await fetchPage(page, pageSize);
+				report(`Fetched ${++fetched} of ${totalPages} pages…`);
+				return response;
+			}
+		);
+		responses.push(...rest);
+	}
 
 	// Dedupe by project id in case the server's ordering shifted between pages
 	const projects = new Map<number, number>();
-	for (const response of [first, second, ...rest]) {
+	for (const response of responses) {
 		for (const project of response?.Projects ?? []) {
 			projects.set(project.Id, project.Income || 0);
 		}

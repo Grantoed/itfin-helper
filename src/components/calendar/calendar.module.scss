@@ -1,27 +1,71 @@
+.wrapper {
+	position: relative;
+	width: 100%;
+}
+
+// ITFin .form-control (night theme)
 .datePicker {
-	border: 2px solid var(--input-bg-color);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
 	width: 100%;
 	padding: 8px 12px;
-	font-family: var(--alt-font);
-	font-size: 14px;
-	font-weight: 400;
-	border-radius: 10px;
+	border: 1px solid var(--input-bg);
+	border-radius: var(--radius-input);
+	font-family: var(--main-font);
+	font-size: 15px;
+	text-align: left;
 	color: var(--text-color);
-	background-color: var(--input-bg-color);
-	transition: border-color var(--transition), background-color var(--transition);
+	background-color: var(--input-bg);
+	box-shadow: var(--input-shadow);
+	cursor: pointer;
+	transition: background-color var(--transition);
 
-	&:focus {
-		outline: none;
-		background-color: rgb(61, 61, 61);
+	&:hover:not(:disabled),
+	&[aria-expanded='true'] {
+		background-color: var(--input-focus-bg);
+		border-color: var(--input-focus-bg);
 	}
 
-	&::placeholder {
-		color: #999;
+	&:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 0.125rem var(--primary-ring);
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 }
 
+.icon {
+	flex-shrink: 0;
+	color: var(--text-muted);
+}
+
+.dropdown {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 6px;
+	border: 2px solid var(--card-border);
+	border-radius: var(--radius);
+	background-color: var(--card-bg);
+	box-shadow: var(--dropdown-shadow);
+}
+
+// The calendar's own frame is drawn by .dropdown
 .calendar {
-	font-family: var(--main-font) !important;
-	background-color: var(--bg-color) !important;
-	color: var(--text-color) !important;
+	border: none !important;
+}
+
+.hint {
+	font-size: 12px;
+	color: var(--text-muted);
 }

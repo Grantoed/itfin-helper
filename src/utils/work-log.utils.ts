@@ -8,7 +8,9 @@ export type WorkLogSummary = {
 	underworkedDays: WorkLogDay[];
 };
 
-// Employees who logged less than a full workday on average, worst first
+// Employees who logged less than their expected hours, worst first.
+// Vacation and unpaid days count as logged time in ITFin, so they never show
+// up as gaps.
 export const summarizeWorkLogs = (
 	employees: WorkLogEmployee[],
 	hideFreelancers: boolean
@@ -16,16 +18,16 @@ export const summarizeWorkLogs = (
 	employees
 		.filter(employee => !hideFreelancers || !employee.isFreelancer)
 		.map(employee => {
+			// Results cached by older versions have no dailyMinutes
+			const expected = employee.dailyMinutes || WORKDAY_IN_MINUTES;
 			const workDays = employee.days.filter(
 				day => !day.isWeekend && !day.isHoliday
 			);
 			const worked = workDays.reduce((sum, day) => sum + day.MinutesInt, 0);
 			return {
 				employee,
-				deficit: workDays.length * WORKDAY_IN_MINUTES - worked,
-				underworkedDays: workDays.filter(
-					day => day.MinutesInt < WORKDAY_IN_MINUTES
-				),
+				deficit: workDays.length * expected - worked,
+				underworkedDays: workDays.filter(day => day.MinutesInt < expected),
 			};
 		})
 		.filter(summary => summary.deficit > 0)

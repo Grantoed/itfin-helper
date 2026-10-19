@@ -1,6 +1,8 @@
 import { API_BASE_URL, ITFIN_ORIGIN, JWT_COOKIE_NAME } from './constants';
 
-const REQUEST_TIMEOUT_MS = 30_000;
+// ITFin is slow: a projects-summary request routinely takes 1-2.5 minutes and
+// team tracking ~30s, so only give up on requests that are clearly stuck.
+const REQUEST_TIMEOUT_MS = 5 * 60_000;
 
 export class ApiError extends Error {
 	constructor(message: string, readonly status?: number) {
@@ -8,6 +10,9 @@ export class ApiError extends Error {
 		this.name = 'ApiError';
 	}
 }
+
+export const isAuthError = (error: unknown) =>
+	error instanceof ApiError && (error.status === 401 || error.status === 403);
 
 export const getJwt = async (): Promise<string | null> => {
 	const cookie = await chrome.cookies.get({
@@ -30,7 +35,7 @@ const messageForStatus = (status: number) => {
 	return `ITFin request failed (HTTP ${status}).`;
 };
 
-// Authenticated GET against the ITFin API. Times out after 30s and honours
+// Authenticated GET against the ITFin API. Times out after 5 minutes and honours
 // the caller's abort signal.
 export async function apiGet<T>(
 	path: string,
