@@ -140,8 +140,12 @@ export const countDays = (startDate: string, endDate: string): number => {
 	return Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
 };
 
-export const formatTimestamp = (value: number): string =>
-	new Date(value).toLocaleString(undefined, {
-		dateStyle: 'medium',
-		timeStyle: 'short',
-	});
+// 'Oct 20, 2026, 00:14' — 24-hour time, the same on every locale
+export const formatTimestamp = (value: number): string => {
+	const date = new Date(value);
+	return `${
+		MONTHS[date.getMonth()]
+	} ${date.getDate()}, ${date.getFullYear()}, ${pad(date.getHours())}:${pad(
+		date.getMinutes()
+	)}`;
+};

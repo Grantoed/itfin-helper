@@ -3,6 +3,7 @@ import {
 	countDays,
 	countWorkingDays,
 	formatDateRange,
+	formatTimestamp,
 	getFirstDayOfMonth,
 	getLastFriday,
 	getLastWeekendEnd,
@@ -109,6 +110,18 @@ describe.each(TIMEZONES)('date utils in %s', timezone => {
 		expect(countDays('2026-10-19', '2026-10-19')).toBe(1);
 		expect(countDays('2026-03-27', '2026-04-02')).toBe(7);
 		expect(countDays('2026-10-23', '2026-11-03')).toBe(12);
+	});
+
+	it('formats fetch timestamps in 24-hour time', () => {
+		expect(formatTimestamp(at('2026-10-20', 0, 14).getTime())).toBe(
+			'Oct 20, 2026, 00:14'
+		);
+		expect(formatTimestamp(at('2026-10-05', 23, 5).getTime())).toBe(
+			'Oct 5, 2026, 23:05'
+		);
+		expect(formatTimestamp(at('2026-01-01', 12, 0).getTime())).toBe(
+			'Jan 1, 2026, 12:00'
+		);
 	});
 
 	it('formats date ranges', () => {
