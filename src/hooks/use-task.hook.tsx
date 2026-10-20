@@ -102,11 +102,17 @@ export function useTask<S extends TaskScope>(
 		}
 	};
 
-	const start = async () => {
+	const startWith = async (taskParams: TaskParamsMap[S]) => {
 		if (loading) return;
 		setPending(true);
-		await send({ type: 'START_TASK', scope, params });
+		await send({ type: 'START_TASK', scope, params: taskParams });
 		setPending(false);
+	};
+
+	// Changes the inputs and fetches for them straight away
+	const setParamsAndStart = (nextParams: TaskParamsMap[S]) => {
+		setParams(nextParams);
+		void startWith(nextParams);
 	};
 
 	return {
@@ -117,7 +123,8 @@ export function useTask<S extends TaskScope>(
 		startedAt: isRunning ? state.startedAt : undefined,
 		error,
 		result,
-		start,
+		start: () => startWith(params),
+		setParamsAndStart,
 		cancel: () => send({ type: 'CANCEL_TASK', scope }),
 		clear: () => send({ type: 'CLEAR_TASK', scope }),
 	};

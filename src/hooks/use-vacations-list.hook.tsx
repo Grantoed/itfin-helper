@@ -15,8 +15,11 @@ const useVacationsList = () => {
 			getStorageValue<FilterType>(PREF_KEYS.VACATION_FILTER) ?? 'company',
 	}));
 
+	// Switching scope fetches right away (it takes a second or two), so the
+	// list doesn't just go blank until Fetch is pressed again
 	const setFilterType = (filterType: FilterType) => {
-		task.setParams(params => ({ ...params, filterType }));
+		if (filterType === task.params.filterType) return;
+		task.setParamsAndStart({ ...task.params, filterType });
 		setStorageValue(PREF_KEYS.VACATION_FILTER, filterType);
 	};
 
