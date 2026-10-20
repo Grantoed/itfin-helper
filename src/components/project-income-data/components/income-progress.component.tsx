@@ -5,6 +5,7 @@ import {
 	calculateIncomeProgress,
 	formatPercent,
 	formatUsd,
+	formatWorkingDaysPercent,
 	parseAmount,
 } from '../../../utils/income.utils';
 import { usePersistentState } from '../../../utils/store.util';
@@ -41,13 +42,13 @@ const IncomeProgress = ({ income, month, workingDays }: Props) => {
 	);
 	const workingDaysText = `${workingDays.passed}/${
 		workingDays.total
-	} (${formatPercent(workingDaysRatio)})`;
+	} (${formatWorkingDaysPercent(workingDaysRatio)})`;
 
 	const copyText = planned
 		? [
 				`Planned Income ${formatUsd(planned, 0)}`,
-				`Working days progress: ${formatPercent(workingDaysRatio)}`,
-				`Expected earned Income ${formatPercent(
+				`Working days progress: ${formatWorkingDaysPercent(workingDaysRatio)}`,
+				`Expected earned Income ${formatWorkingDaysPercent(
 					workingDaysRatio
 				)} x ${formatUsd(planned, 0)} = ${formatUsd(expected, 0)}`,
 				`Progress ${formatUsd(income, 0)} (${
@@ -80,7 +81,8 @@ const IncomeProgress = ({ income, month, workingDays }: Props) => {
 					<>
 						<dt>Expected earned</dt>
 						<dd>
-							{formatPercent(workingDaysRatio)} × {formatUsd(planned, 0)} ={' '}
+							{formatWorkingDaysPercent(workingDaysRatio)} ×{' '}
+							{formatUsd(planned, 0)} ={' '}
 							<strong>{formatUsd(expected, 0)}</strong>
 						</dd>
 						<dt>Progress</dt>

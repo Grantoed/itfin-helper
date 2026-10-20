@@ -52,7 +52,16 @@ export const parseAmount = (value: string): number | null => {
 	return Number.isFinite(amount) ? amount : null;
 };
 
-export const formatPercent = (ratio: number) => `${Math.round(ratio * 100)}%`;
+// Rounded to at most `decimals` places: 0.54545 -> '54.5%', 0.5 -> '50%'
+export const formatPercent = (ratio: number, decimals = 0) =>
+	`${new Intl.NumberFormat('en-US', {
+		maximumFractionDigits: decimals,
+	}).format(ratio * 100)}%`;
+
+// Working days progress is shown with one decimal: the calculations use the
+// exact ratio, and a whole-number percentage wouldn't add up when checked
+export const formatWorkingDaysPercent = (ratio: number) =>
+	formatPercent(ratio, 1);
 
 export const formatUsd = (value: number, fractionDigits = 2) =>
 	new Intl.NumberFormat('en-US', {

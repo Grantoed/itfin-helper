@@ -1,6 +1,7 @@
 import {
 	calculateIncomeProgress,
 	formatPercent,
+	formatWorkingDaysPercent,
 	formatUsd,
 	parseAmount,
 } from './income.utils';
@@ -49,6 +50,10 @@ describe('parseAmount', () => {
 describe('formatting', () => {
 	it('formats percent and dollars', () => {
 		expect(formatPercent(0.5454)).toBe('55%');
+		expect(formatPercent(1.0977)).toBe('110%');
+		expect(formatWorkingDaysPercent(12 / 22)).toBe('54.5%');
+		expect(formatWorkingDaysPercent(11 / 22)).toBe('50%');
+		expect(formatWorkingDaysPercent(1)).toBe('100%');
 		expect(formatUsd(54545.45, 0)).toBe('$54,545');
 		expect(formatUsd(1234.5)).toBe('$1,234.50');
 	});
